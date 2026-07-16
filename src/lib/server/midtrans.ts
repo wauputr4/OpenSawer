@@ -114,11 +114,9 @@ export function validSignature(body: MidtransStatus): boolean {
 	const expected = new Bun.CryptoHasher('sha512')
 		.update(`${body.order_id}${body.status_code}${body.gross_amount}${serverKey}`)
 		.digest('hex');
-	const supplied = body.signature_key.toLowerCase();
-	return (
-		supplied.length === expected.length &&
-		timingSafeEqual(Buffer.from(supplied), Buffer.from(expected))
-	);
+	const supplied = Buffer.from(body.signature_key.toLowerCase(), 'hex');
+	const expectedBuffer = Buffer.from(expected, 'hex');
+	return supplied.length === expectedBuffer.length && timingSafeEqual(supplied, expectedBuffer);
 }
 
 export type { MidtransStatus };

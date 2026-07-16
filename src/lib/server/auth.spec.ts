@@ -11,6 +11,12 @@ afterEach(() => {
 });
 
 describe('admin session', () => {
+	test('rejects malformed Unicode signatures without throwing', async () => {
+		process.env.NODE_ENV = 'development';
+		process.env.OPENSAWER_SESSION_SECRET = 'test-secret';
+		await expect(validAdminCookie(`${Date.now() + 60_000}.${'é'.repeat(43)}`)).resolves.toBe(false);
+	});
+
 	test('requires an explicit secret in production', async () => {
 		process.env.NODE_ENV = 'production';
 		delete process.env.OPENSAWER_SESSION_SECRET;

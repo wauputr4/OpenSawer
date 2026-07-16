@@ -71,5 +71,7 @@ describe('Midtrans state', () => {
 		expect(validSignature(body)).toBe(true);
 		body.gross_amount = '20000.00';
 		expect(validSignature(body)).toBe(false);
+		body.signature_key = 'é'.repeat(128);
+		expect(validSignature(body)).toBe(false);
 	});
 });

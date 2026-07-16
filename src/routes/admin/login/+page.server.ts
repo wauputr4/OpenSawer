@@ -11,9 +11,13 @@ export const load: PageServerLoad = ({ locals }) => {
 export const actions: Actions = {
 	default: async ({ request, cookies, getClientAddress }) => {
 		const data = await request.formData();
-		if (
-			!(await verifyTurnstile(String(data.get('cf-turnstile-response') || ''), getClientAddress()))
-		) {
+		let clientAddress: string | undefined;
+		try {
+			clientAddress = getClientAddress();
+		} catch {
+			// Turnstile accepts an omitted remote address.
+		}
+		if (!(await verifyTurnstile(String(data.get('cf-turnstile-response') || ''), clientAddress))) {
 			await new Promise((resolve) => setTimeout(resolve, 1_000));
 			return fail(400, { error: 'Verifikasi keamanan gagal. Muat ulang lalu coba lagi.' });
 		}

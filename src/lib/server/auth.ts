@@ -27,9 +27,11 @@ export async function validAdminCookie(value: string | undefined): Promise<boole
 	const [expires, supplied] = value.split('.');
 	if (!expires || !supplied || Number(expires) < Date.now()) return false;
 	const expected = await signature(expires);
+	const suppliedBuffer = Buffer.from(supplied, 'base64url');
+	const expectedBuffer = Buffer.from(expected, 'base64url');
 	return (
-		supplied.length === expected.length &&
-		timingSafeEqual(Buffer.from(supplied), Buffer.from(expected))
+		suppliedBuffer.length === expectedBuffer.length &&
+		timingSafeEqual(suppliedBuffer, expectedBuffer)
 	);
 }
 
