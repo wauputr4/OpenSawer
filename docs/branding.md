@@ -14,14 +14,27 @@ Requirements:
 
 ## Palette
 
-| Token | Color | Use |
-| --- | --- | --- |
+| Token   | Color     | Use                      |
+| ------- | --------- | ------------------------ |
 | Emerald | `#18A873` | Primary actions and mark |
-| Ink | `#172621` | Text and dark surfaces |
-| Mist | `#F3F8F6` | Page background |
-| Coin | `#F5B942` | Optional small accent |
+| Ink     | `#172621` | Text and dark surfaces   |
+| Mist    | `#F3F8F6` | Page background          |
+| Coin    | `#F5B942` | Optional small accent    |
 
-The UI should remain mostly neutral: centered mobile-first donation cards, white surfaces, 16–20px radii, subtle borders/shadows, and one dominant action.
+The UI should remain mostly neutral: centered mobile-first donation cards, warm white surfaces, 16–20px radii, crisp borders, restrained shadows, and one dominant action. Emerald is a deliberate signature, not a gradient backdrop. Coin yellow should appear only as a small moment of warmth around support, progress, or success.
+
+## UI character
+
+OpenSawer should feel generous, direct, and human rather than like a generic fintech dashboard.
+
+- Use strong type hierarchy and short Indonesian copy.
+- Let campaign imagery and supporter messages provide personality; keep the application shell quiet.
+- Give the donation amount, visibility choices, total, and payment action a clear reading order.
+- Use shadcn-svelte as accessible building blocks, not as the visual identity. Adapt spacing, shape, and states to this direction.
+- Keep motion purposeful and brief: payment progress, confirmation, and campaign progress only.
+- Avoid oversized marketing headlines, glass effects, ornamental gradients, crowded card grids, and icon-only controls.
+- Preserve visible focus states, sufficient contrast, keyboard operation, and 44px touch targets.
+
+Tailwind CSS 4 should express a small set of shared visual tokens. Do not build a separate design-system package until repeated product code proves it is needed.
 
 Actual logo artwork is intentionally deferred until a visual direction is selected and tested at favicon, mobile header, and repository social-preview sizes.
-

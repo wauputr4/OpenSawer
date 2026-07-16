@@ -1,6 +1,6 @@
 name: Bug report
 description: Report reproducible incorrect behavior
-title: "bug: "
+title: 'bug: '
 labels: [bug]
 body:
   - type: textarea
@@ -22,4 +22,3 @@ body:
     attributes:
       label: Relevant logs
       description: Remove secrets, payment details, and donor personal data.
-

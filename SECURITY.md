@@ -11,4 +11,3 @@ Include the affected version or commit, reproduction steps, impact, and any sugg
 High-priority reports include payment-status forgery, webhook bypass, authentication or session issues, donor email disclosure, stored cross-site scripting, CSRF on admin actions, and unsafe file uploads.
 
 Only the latest released version will receive security fixes once releases begin.
-

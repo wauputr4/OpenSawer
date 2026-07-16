@@ -1,27 +1,28 @@
 # Roadmap
 
-## Milestone 1: donation loop
+## Milestone 1: donation loop (alpha implemented)
 
-- Go application and SQLite migrations.
-- Default campaign without a target.
-- Landing, donation, status, admin login, and single dashboard pages.
-- templ and the minimum copied templUI components.
-- Anonymous or email-verified named donations.
-- Independent supporter and amount visibility.
+- SvelteKit application running on Bun with `bun:sqlite` migrations.
+- Svelte 5 UI using the minimum copied shadcn-svelte components and Tailwind CSS 4.
+- Multiple campaigns from the first release, each with an optional target.
+- One default campaign without a target created during initial setup.
+- Landing, campaign donation, payment status, admin login, and single dashboard pages.
+- Anonymous or email-verified named donations with unique usernames.
+- Independent supporter and amount visibility, open by default.
 - Midtrans Snap sandbox integration.
 - Verified, idempotent notification handler.
-- Monthly and all-time rankings.
-- Health check, tests for payment transitions, and deployment documentation.
+- Public paid-donation ranking with privacy-aware ordering.
+- Health check, tests for payment transitions, Docker packaging, and self-hosting documentation.
 
 ## Milestone 2: operational polish
 
 Add only after the first milestone is used successfully:
 
-- Multiple campaigns and optional targets.
 - Transaction export.
 - Improved moderation and campaign archiving.
-- Production backup/restore command.
+- Production backup and restore command.
 - Email delivery observability.
+- Monthly and all-time ranking filters.
 
 ## Later, based on demand
 
@@ -32,4 +33,3 @@ Add only after the first milestone is used successfully:
 - Multi-tenant hosting.
 
 These are not commitments for the first release.
-

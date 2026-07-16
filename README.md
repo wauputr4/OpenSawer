@@ -2,7 +2,7 @@
 
 OpenSawer is a small, self-hosted donation page for Indonesian creators and communities. It focuses on one job: accepting support through a modern public page without requiring donors to create accounts.
 
-> Status: documentation-first planning. The application is not implemented yet.
+> Status: early alpha. The complete donation loop is runnable locally; use sandbox credentials before any production deployment.
 
 ## Product boundary
 
@@ -18,25 +18,25 @@ OpenSawer is a small, self-hosted donation page for Indonesian creators and comm
 
 OpenSawer is not a marketplace, storefront, multi-tenant SaaS, page builder, or withdrawal service.
 
-## Planned pages
+## Pages
 
-| Page | Purpose |
-| --- | --- |
-| `/` | Minimal landing page, active campaigns, CTA, and ranking |
-| `/sawer` | Campaign, amount, identity, visibility, message, and payment form |
-| `/sawer/{id}` | Pending, successful, expired, or failed payment status |
-| `/admin/login` | Single-owner admin login |
-| `/admin` | Summary, donations, campaigns, and settings in one dashboard |
+| Page           | Purpose                                                           |
+| -------------- | ----------------------------------------------------------------- |
+| `/`            | Minimal landing page, active campaigns, CTA, and ranking          |
+| `/sawer`       | Campaign, amount, identity, visibility, message, and payment form |
+| `/sawer/{id}`  | Pending, successful, expired, or failed payment status            |
+| `/admin/login` | Single-owner admin login                                          |
+| `/admin`       | Summary, donations, campaigns, and settings in one dashboard      |
 
-## Planned stack
+## Stack
 
-- Go with `net/http`
-- [templ](https://templ.guide/) for server-rendered UI
-- [templUI](https://templui.io/) components copied into the project
-- Tailwind CSS through the minimal templUI toolchain
-- SQLite through `database/sql` and `modernc.org/sqlite`
-- Midtrans Snap and verified HTTP notifications
-- Small amounts of vanilla JavaScript only where Snap requires it
+- [Bun](https://bun.com/) as the JavaScript runtime and package manager
+- [SvelteKit](https://svelte.dev/docs/kit) with Svelte 5 for server-rendered pages, forms, and endpoints
+- [shadcn-svelte](https://www.shadcn-svelte.com/) for accessible, locally owned UI components
+- [Tailwind CSS 4](https://tailwindcss.com/) for styling
+- SQLite through Bun's built-in `bun:sqlite` driver
+- Midtrans Snap through server-side `fetch` and verified HTTP notifications
+- TypeScript throughout the application
 
 ## Documentation
 
@@ -51,9 +51,34 @@ OpenSawer is not a marketplace, storefront, multi-tenant SaaS, page builder, or 
 
 ## Local development
 
-There is no runnable application yet. The first implementation milestone is tracked in [the roadmap](docs/roadmap.md).
+Requires Bun 1.3.14 or newer.
+
+```bash
+cp .env.example .env
+bun install --frozen-lockfile
+bun run dev
+```
+
+Open `http://localhost:5173`. The example environment enables `MIDTRANS_MOCK=true`, exposes email verification codes only in local development, and uses the local admin password `change-me`. Never use those settings in production.
+
+Before a production run:
+
+1. Set a long `OPENSAWER_SESSION_SECRET` and a Bun password hash in `OPENSAWER_ADMIN_PASSWORD_HASH`.
+2. Set `MIDTRANS_MOCK=false`, add Midtrans keys, and configure the HTTPS notification URL as `/webhooks/midtrans`.
+3. Configure SMTP for named donors and set the public `ORIGIN`.
+4. Mount `data/` persistently and keep one application writer.
+
+Quality checks:
+
+```bash
+bun run check
+bun run lint
+bun test
+bun --bun run build
+```
+
+Run the production build with `bun ./build/index.js`, or use the included Docker Compose file. See [configuration](docs/configuration.md) for every environment variable.
 
 ## License
 
 [MIT](LICENSE)
-

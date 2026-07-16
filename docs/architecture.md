@@ -2,34 +2,35 @@
 
 ## Shape
 
-OpenSawer is one Go process serving HTML, static assets, admin routes, and Midtrans endpoints. SQLite stores application state on the same host.
+OpenSawer is one SvelteKit application running on Bun. It serves the public pages, admin UI, server actions, and Midtrans endpoints. Bun's built-in `bun:sqlite` driver stores application state in SQLite on the same host.
 
 ```text
 Browser
-  -> Go net/http
-      -> templ + templUI
-      -> SQLite
+  -> SvelteKit on Bun
+      -> Svelte 5 + shadcn-svelte + Tailwind CSS 4
+      -> server actions and route handlers
+      -> bun:sqlite -> SQLite
       -> Midtrans Snap API
 
 Midtrans webhook
-  -> Go notification handler
+  -> SvelteKit route handler
       -> verify with Midtrans
       -> idempotent SQLite update
 ```
 
-## Packages
+## Project shape
 
-Start with only the packages that have real responsibilities:
+Keep responsibilities close to the routes that use them:
 
 ```text
-cmd/opensawer       process entrypoint
-internal/app        routes and HTTP handlers
-internal/store      SQLite queries and migrations
-internal/midtrans   Snap requests and notification verification
-internal/ui         templ pages and copied templUI components
+src/lib/components/ui     copied shadcn-svelte components actually used
+src/lib/server/db.ts      bun:sqlite connection and migrations
+src/lib/server/auth.ts    admin session and donor verification helpers
+src/lib/server/midtrans.ts Snap requests and notification verification
+src/routes                public, admin, health, and webhook routes
 ```
 
-Do not introduce a payment-provider interface until a second provider is being implemented.
+Do not add a separate API service, client-side state library, ORM, or payment-provider interface for the first release. Extract a provider contract only when a second provider is implemented.
 
 ## Payment state
 
@@ -57,18 +58,17 @@ Move to another database only when measured concurrency or deployment requiremen
 
 ## UI
 
-- Server-render complete pages with templ.
-- Copy only the templUI components actually used.
-- Keep Tailwind configuration limited to OpenSawer's tokens.
-- Use native form controls and progressive enhancement.
-- Use JavaScript only for Midtrans Snap and small state interactions that HTML cannot cover cleanly.
+- Render public and admin pages with SvelteKit SSR and Svelte 5.
+- Copy only the shadcn-svelte components that are used.
+- Use Tailwind CSS 4 for the small shared design token set.
+- Prefer native form controls and SvelteKit form actions.
+- Keep client JavaScript to Midtrans Snap and interactions that need immediate feedback.
 
 ## Security boundary
 
 - Treat donor fields and webhook bodies as untrusted.
-- Escape user content through templ; do not render donor HTML.
-- Keep server keys and session secrets in environment variables.
-- Use HTTPS, secure cookies, CSRF protection on admin mutations, request-size limits, and rate limits on donation/email-verification endpoints.
+- Render donor messages as text, never HTML.
+- Keep Midtrans server keys, SMTP credentials, and session secrets server-only.
+- Use HTTPS, secure cookies, CSRF origin checks, request-size limits, and rate limits on donation and email-verification endpoints.
 - Verify Midtrans notifications and process them idempotently.
 - Never expose donor email publicly.
-

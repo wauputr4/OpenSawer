@@ -1,12 +1,12 @@
 # Configuration
 
-OpenSawer uses environment variables for secrets and deployment-level settings. Editable presentation settings may move into SQLite when the admin UI is implemented.
+OpenSawer uses environment variables for secrets and deployment settings. Campaigns and editable presentation defaults belong in SQLite and are managed from the admin dashboard.
 
-## Planned environment variables
+## Environment variables
 
 ```dotenv
-OPENSAWER_BASE_URL=https://sawer.example.com
-OPENSAWER_ADDR=:8080
+ORIGIN=https://sawer.example.com
+PORT=3000
 OPENSAWER_DB_PATH=./data/opensawer.db
 OPENSAWER_SESSION_SECRET=replace-with-a-long-random-value
 
@@ -15,6 +15,7 @@ OPENSAWER_ADMIN_PASSWORD_HASH=
 
 MIDTRANS_ENV=sandbox
 MIDTRANS_SERVER_KEY=
+MIDTRANS_MOCK=false
 MIDTRANS_CLIENT_KEY=
 
 SMTP_HOST=
@@ -24,21 +25,29 @@ SMTP_PASSWORD=
 SMTP_FROM=no-reply@example.com
 ```
 
-Never commit `.env`, database files, uploaded donor data, Midtrans keys, SMTP credentials, or session secrets.
+`ORIGIN` is required by the self-hosted SvelteKit server for correct public URLs and form-origin checks. Never commit `.env`, database files, uploads, Midtrans keys, SMTP credentials, or session secrets.
+
+`MIDTRANS_MOCK=true` is only for local UI development. It adds a server-side payment simulation action and must never be enabled on a public deployment. Without SMTP, local development returns the OTP in the page response; production rejects OTP delivery until SMTP is configured.
+
+Generate the production admin hash with Bun, for example:
+
+```bash
+bun -e "console.log(await Bun.password.hash('replace-this-password'))"
+```
 
 ## Initial defaults
 
-| Setting | Default |
-| --- | --- |
-| Currency | IDR |
-| Minimum donation | Rp10.000 |
-| Preset amounts | Rp10k, Rp25k, Rp50k, Rp100k |
-| Show supporter | Open |
-| Show amount | Open |
-| Ranking | Enabled |
-| Campaign | General Support |
-| Campaign target | None |
-| Payment environment | Sandbox |
+| Setting             | Default                     |
+| ------------------- | --------------------------- |
+| Currency            | IDR                         |
+| Minimum donation    | Rp10.000                    |
+| Preset amounts      | Rp10k, Rp25k, Rp50k, Rp100k |
+| Show supporter      | Open                        |
+| Show amount         | Open                        |
+| Ranking             | Enabled                     |
+| Initial campaign    | General Support             |
+| Campaign target     | None                        |
+| Payment environment | Sandbox                     |
 
 ## Midtrans
 
@@ -50,5 +59,4 @@ Never commit `.env`, database files, uploaded donor data, Midtrans keys, SMTP cr
 
 ## Self-hosting
 
-The initial supported deployment is one OpenSawer process behind an HTTPS reverse proxy with a persistent volume containing `data/` and `uploads/`.
-
+The supported first deployment is one SvelteKit process running on Bun behind an HTTPS reverse proxy. Mount the persistent `data/` directory. Build with `bun --bun run build`, run with `bun ./build/index.js`, and keep a single writer for SQLite.
