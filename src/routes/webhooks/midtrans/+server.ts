@@ -1,7 +1,14 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { getDb } from '$lib/server/db';
-import { fetchStatus, mapStatus, validSignature, type MidtransStatus } from '$lib/server/midtrans';
+import {
+	canTransitionPaymentStatus,
+	fetchStatus,
+	mapStatus,
+	validSignature,
+	type MidtransStatus,
+	type PaymentStatus
+} from '$lib/server/midtrans';
 
 export const POST: RequestHandler = async ({ request }) => {
 	let notification: MidtransStatus;
@@ -21,7 +28,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		return json({ error: 'order mismatch' }, { status: 400 });
 	const db = getDb();
 	const donation = db
-		.query<{ amount: number; status: string }, [string]>(
+		.query<{ amount: number; status: PaymentStatus }, [string]>(
 			'SELECT amount, status FROM donations WHERE order_id = ?'
 		)
 		.get(canonical.order_id);
@@ -29,7 +36,7 @@ export const POST: RequestHandler = async ({ request }) => {
 	if (Number(canonical.gross_amount) !== donation.amount)
 		return json({ error: 'amount mismatch' }, { status: 400 });
 	const mapped = mapStatus(canonical.transaction_status, canonical.fraud_status);
-	if (donation.status !== 'paid' || mapped === 'refunded') {
+	if (canTransitionPaymentStatus(donation.status, mapped)) {
 		db.query(
 			`UPDATE donations SET status = ?, payment_type = ?, provider_transaction_id = ?, paid_at = CASE WHEN ? = 'paid' THEN COALESCE(paid_at, CURRENT_TIMESTAMP) ELSE paid_at END, updated_at = CURRENT_TIMESTAMP WHERE order_id = ?`
 		).run(

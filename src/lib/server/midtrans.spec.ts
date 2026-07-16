@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test } from 'vitest';
 import {
+	canTransitionPaymentStatus,
 	mapStatus,
 	mockEnabled,
 	testMidtransCredentials,
@@ -24,6 +25,12 @@ describe('Midtrans state', () => {
 		expect(mapStatus('expire')).toBe('expired');
 		expect(mapStatus('deny')).toBe('failed');
 		expect(mapStatus('pending')).toBe('pending');
+	});
+
+	test('does not regress refunded payments when webhooks arrive out of order', () => {
+		expect(canTransitionPaymentStatus('refunded', 'paid')).toBe(false);
+		expect(canTransitionPaymentStatus('paid', 'refunded')).toBe(true);
+		expect(canTransitionPaymentStatus('expired', 'paid')).toBe(true);
 	});
 
 	test('never enables mock payments in production', () => {

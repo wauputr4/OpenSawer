@@ -65,6 +65,15 @@ export function updateEnvFile(values: Record<string, string>): void {
 		copyFileSync(temporary, path);
 		unlinkSync(temporary);
 	}
-	chmodSync(path, 0o600);
+	try {
+		chmodSync(path, 0o600);
+	} catch (error) {
+		if (
+			!(error instanceof Error) ||
+			!('code' in error) ||
+			!['EPERM', 'ENOTSUP'].includes(String(error.code))
+		)
+			throw error;
+	}
 	for (const [name, value] of Object.entries(values)) process.env[name] = value;
 }

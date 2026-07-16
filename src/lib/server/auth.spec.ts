@@ -17,6 +17,11 @@ describe('admin session', () => {
 		await expect(validAdminCookie(`${Date.now() + 60_000}.${'é'.repeat(43)}`)).resolves.toBe(false);
 	});
 
+	test('rejects malformed expiration values', async () => {
+		process.env.NODE_ENV = 'development';
+		await expect(validAdminCookie('not-a-date.signature')).resolves.toBe(false);
+	});
+
 	test('requires an explicit secret in production', async () => {
 		process.env.NODE_ENV = 'production';
 		delete process.env.OPENSAWER_SESSION_SECRET;

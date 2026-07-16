@@ -32,6 +32,7 @@
 
 	let campaignDialog: HTMLDialogElement;
 	let campaignMode = $state<'create' | 'edit'>('create');
+	let slugManual = $state(false);
 	let campaignForm = $state({
 		id: 0,
 		name: '',
@@ -46,9 +47,17 @@
 	const serializedSocialLinks = $derived(
 		socialLinks.map((link) => `${link.label} | ${link.url}`).join('\n')
 	);
+	const slugify = (value: string) =>
+		value
+			.toLowerCase()
+			.trim()
+			.replace(/[^a-z0-9]+/g, '-')
+			.replace(/(^-|-$)/g, '')
+			.slice(0, 60);
 
 	function openCreateCampaign() {
 		campaignMode = 'create';
+		slugManual = false;
 		campaignForm = {
 			id: 0,
 			name: '',
@@ -62,6 +71,7 @@
 
 	function openEditCampaign(campaign: (typeof data.campaigns)[number]) {
 		campaignMode = 'edit';
+		slugManual = true;
 		campaignForm = {
 			id: campaign.id,
 			name: campaign.name,
@@ -262,6 +272,16 @@
 					/>
 				</div>
 				<div class="sm:col-span-2">
+					<label for="receipt_quote" class="mb-1 block text-xs font-bold">Kutipan kartu</label
+					><Input
+						id="receipt_quote"
+						name="receipt_quote"
+						value={data.settings.receipt_quote}
+						maxlength={180}
+						required
+					/>
+				</div>
+				<div class="sm:col-span-2">
 					<label for="profile_image_url" class="mb-1 block text-xs font-bold"
 						>URL logo atau foto profil (opsional)</label
 					><Input
@@ -292,25 +312,29 @@
 							value="YouTube"
 						></option><option value="X"></option><option value="Facebook"></option><option
 							value="Website"
-						></option></datalist
+						></option><option value="Threads"></option></datalist
 					>
 					{#each socialLinks as link, index (index)}
 						<div class="grid gap-2 sm:grid-cols-[10rem_1fr_auto]">
-							<Input
-								bind:value={link.label}
-								list="social-platforms"
-								aria-label={`Label tautan ${index + 1}`}
-								placeholder="Instagram"
-								maxlength={30}
-								required
-							/>
-							<Input
-								bind:value={link.url}
-								type="url"
-								aria-label={`URL tautan ${index + 1}`}
-								placeholder="https://instagram.com/username"
-								required
-							/>
+							<label class="grid gap-1 text-xs font-semibold">
+								Label tombol
+								<Input
+									bind:value={link.label}
+									list="social-platforms"
+									placeholder="Bebas, mis. Threads"
+									maxlength={30}
+									required
+								/>
+							</label>
+							<label class="grid gap-1 text-xs font-semibold">
+								URL
+								<Input
+									bind:value={link.url}
+									type="url"
+									placeholder="https://threads.net/@username"
+									required
+								/>
+							</label>
 							<Button
 								type="button"
 								variant="ghost"
@@ -456,7 +480,7 @@
 
 <dialog
 	bind:this={campaignDialog}
-	class="w-[calc(100%-2rem)] max-w-lg rounded-3xl bg-card p-0 text-foreground shadow-2xl backdrop:bg-foreground/45"
+	class="m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg overflow-y-auto rounded-3xl bg-card p-0 text-foreground shadow-2xl backdrop:bg-foreground/45"
 >
 	<div class="flex items-center justify-between border-b px-5 py-4">
 		<h2 class="font-heading text-2xl font-semibold">
@@ -481,6 +505,10 @@
 				id="campaign_name"
 				name="name"
 				bind:value={campaignForm.name}
+				oninput={(event) => {
+					campaignForm.name = event.currentTarget.value;
+					if (!slugManual) campaignForm.slug = slugify(campaignForm.name);
+				}}
 				required
 			/>
 		</div>
@@ -489,6 +517,7 @@
 				id="campaign_slug"
 				name="slug"
 				bind:value={campaignForm.slug}
+				oninput={() => (slugManual = true)}
 				spellcheck="false"
 				placeholder="dibuat otomatis dari nama"
 			/>

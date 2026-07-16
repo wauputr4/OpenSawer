@@ -1,18 +1,23 @@
 import { redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { createGoogleIdentity, googleCookieName, googleConfigured } from '$lib/server/google';
+import {
+	createGoogleIdentity,
+	googleCookieName,
+	googleConfigured,
+	googleRedirectUri
+} from '$lib/server/google';
 
 export const GET: RequestHandler = async ({ cookies, url }) => {
 	const code = url.searchParams.get('code');
 	const state = url.searchParams.get('state');
 	const expectedState = cookies.get('opensawer_google_state');
 	const verifier = cookies.get('opensawer_google_verifier');
-	cookies.delete('opensawer_google_state', { path: '/auth/google' });
-	cookies.delete('opensawer_google_verifier', { path: '/auth/google' });
+	cookies.delete('opensawer_google_state', { path: '/' });
+	cookies.delete('opensawer_google_verifier', { path: '/' });
 	if (!googleConfigured() || !code || !state || state !== expectedState || !verifier)
 		throw redirect(303, '/sawer?google=failed');
 
-	const callback = new URL('/auth/google/callback', process.env.ORIGIN || url.origin).toString();
+	const callback = googleRedirectUri(process.env.ORIGIN || url.origin);
 	try {
 		const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
 			method: 'POST',

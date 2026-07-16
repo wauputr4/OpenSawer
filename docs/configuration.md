@@ -13,11 +13,13 @@ OPENSAWER_SESSION_SECRET=replace-with-a-long-random-value
 OPENSAWER_ADMIN_USERNAME=admin
 OPENSAWER_ADMIN_PASSWORD_HASH=
 
-TURNSTILE_SITE_KEY=
+PUBLIC_TURNSTILE_SITE_KEY=
 TURNSTILE_SECRET_KEY=
+TURNSTILE_ENABLED=false
 
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=https://sawer.example.com/auth/google/callback
 
 MIDTRANS_ENV=sandbox
 MIDTRANS_MERCHANT_ID=
@@ -34,9 +36,9 @@ SMTP_FROM=no-reply@example.com
 
 `ORIGIN` is required by the self-hosted SvelteKit server for correct public URLs and form-origin checks. Never commit `.env`, database files, uploads, Midtrans keys, SMTP credentials, or session secrets.
 
-Turnstile is optional. The admin login only renders and validates it when both `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` are configured.
+Turnstile is optional. The admin login only renders and validates it when `TURNSTILE_ENABLED=true` and both Turnstile keys are configured.
 
-Google is the default named-donor method when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are configured. Register `${ORIGIN}/auth/google/callback` as an authorized redirect URI. Email OTP remains available as the fallback.
+Google is the default named-donor method when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are configured. Register `GOOGLE_REDIRECT_URI` as an authorized redirect URI using either the built-in `/auth/google/callback` route or its `/api/auth/google/callback` alias. Email OTP remains available as the fallback.
 
 `MIDTRANS_MOCK=true` is only for local UI development. It adds a server-side payment simulation action and must never be enabled on a public deployment. Without SMTP, local development returns the OTP in the page response; production rejects OTP delivery until SMTP is configured.
 

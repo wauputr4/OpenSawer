@@ -35,7 +35,9 @@ export async function validSessionSignature(value: string, supplied: string): Pr
 export async function validAdminCookie(value: string | undefined): Promise<boolean> {
 	if (!value) return false;
 	const [expires, supplied] = value.split('.');
-	if (!expires || !supplied || Number(expires) < Date.now()) return false;
+	const expiration = Number(expires);
+	if (!expires || !supplied || !Number.isFinite(expiration) || expiration < Date.now())
+		return false;
 	return validSessionSignature(expires, supplied);
 }
 

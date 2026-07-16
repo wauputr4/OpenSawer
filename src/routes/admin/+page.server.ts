@@ -125,10 +125,12 @@ export const actions: Actions = {
 			!value(form, 'creator_name') ||
 			!value(form, 'headline') ||
 			!value(form, 'intro_text') ||
+			!value(form, 'receipt_quote') ||
 			!Number.isSafeInteger(minimum) ||
 			minimum < 1000 ||
+			minimum > 100_000_000 ||
 			presets.length < 2 ||
-			presets.some((preset) => preset < minimum)
+			presets.some((preset) => preset < minimum || preset > 100_000_000)
 		)
 			return fail(400, {
 				error: 'Periksa nama, headline, nominal minimum, dan preset.',
@@ -136,13 +138,14 @@ export const actions: Actions = {
 			});
 		getDb()
 			.query(
-				`UPDATE site_settings SET site_name=?, creator_name=?, headline=?, intro_text=?, profile_image_url=?, favicon_url=?, social_links=?, minimum_amount=?, preset_amounts=?, default_show_supporter=?, default_show_amount=?, ranking_enabled=?, updated_at=CURRENT_TIMESTAMP WHERE id=1`
+				`UPDATE site_settings SET site_name=?, creator_name=?, headline=?, intro_text=?, receipt_quote=?, profile_image_url=?, favicon_url=?, social_links=?, minimum_amount=?, preset_amounts=?, default_show_supporter=?, default_show_amount=?, ranking_enabled=?, updated_at=CURRENT_TIMESTAMP WHERE id=1`
 			)
 			.run(
 				value(form, 'site_name').slice(0, 80),
 				value(form, 'creator_name').slice(0, 80),
 				value(form, 'headline').slice(0, 180),
 				value(form, 'intro_text').slice(0, 280),
+				value(form, 'receipt_quote').slice(0, 180),
 				profileImageUrl,
 				faviconUrl,
 				JSON.stringify(socialLinks),

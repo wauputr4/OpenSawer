@@ -18,6 +18,7 @@ export type SiteSettings = {
 	creator_name: string;
 	headline: string;
 	intro_text: string;
+	receipt_quote: string;
 	profile_image_url: string;
 	favicon_url: string;
 	social_links: string;
@@ -32,6 +33,7 @@ const schema = `
 CREATE TABLE IF NOT EXISTS site_settings (
  id INTEGER PRIMARY KEY CHECK (id = 1), site_name TEXT NOT NULL, creator_name TEXT NOT NULL DEFAULT 'Nama Creator', headline TEXT NOT NULL,
 	intro_text TEXT NOT NULL DEFAULT 'Kirim dukungan tanpa membuat akun. Pilih nominal, tulis pesan, lalu selesaikan pembayaran dengan aman.',
+	receipt_quote TEXT NOT NULL DEFAULT 'Yang kecil tetap berarti ketika datang bersama.',
  minimum_amount INTEGER NOT NULL CHECK (minimum_amount > 0), preset_amounts TEXT NOT NULL,
  default_show_supporter INTEGER NOT NULL DEFAULT 1 CHECK (default_show_supporter IN (0,1)),
 	default_show_amount INTEGER NOT NULL DEFAULT 1 CHECK (default_show_amount IN (0,1)),
@@ -70,6 +72,7 @@ CREATE TABLE IF NOT EXISTS donations (
  paid_at TEXT, created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE UNIQUE INDEX IF NOT EXISTS donations_provider_tx ON donations(provider_transaction_id) WHERE provider_transaction_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS donations_status_ranking ON donations(status, show_in_ranking);
 `;
 
 let database: Database | undefined;
@@ -101,6 +104,10 @@ export function getDb(path = process.env.OPENSAWER_DB_PATH || './data/opensawer.
 	if (!settingColumns.has('intro_text'))
 		database.exec(
 			"ALTER TABLE site_settings ADD COLUMN intro_text TEXT NOT NULL DEFAULT 'Kirim dukungan tanpa membuat akun. Pilih nominal, tulis pesan, lalu selesaikan pembayaran dengan aman.'"
+		);
+	if (!settingColumns.has('receipt_quote'))
+		database.exec(
+			"ALTER TABLE site_settings ADD COLUMN receipt_quote TEXT NOT NULL DEFAULT 'Yang kecil tetap berarti ketika datang bersama.'"
 		);
 	database.run(`INSERT OR IGNORE INTO site_settings
 		(id, site_name, headline, minimum_amount, preset_amounts)

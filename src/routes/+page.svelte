@@ -11,11 +11,11 @@
 <svelte:head><title>{data.settings.site_name} — Kirim dukungan</title></svelte:head>
 
 <section
-	class="mx-auto grid max-w-6xl gap-12 px-5 pt-10 pb-16 lg:grid-cols-[1.15fr_.85fr] lg:px-8 lg:pt-20 lg:pb-24"
+	class="mx-auto grid max-w-6xl gap-12 px-5 pt-10 pb-16 lg:px-8 xl:grid-cols-[1.15fr_.85fr] xl:pt-20 xl:pb-24"
 >
-	<div class="max-w-2xl text-center lg:text-left">
+	<div class="mx-auto w-full max-w-2xl text-center xl:mx-0 xl:text-left">
 		<div
-			class="mx-auto mb-5 grid size-24 place-items-center overflow-hidden rounded-full border bg-card shadow-sm lg:mx-0"
+			class="mx-auto mb-5 grid size-24 place-items-center overflow-hidden rounded-full border bg-card shadow-sm xl:mx-0"
 		>
 			{#if data.settings.profile_image_url}<img
 					src={data.settings.profile_image_url}
@@ -32,11 +32,11 @@
 		<h1 class="font-heading text-5xl leading-[1.03] font-semibold text-balance sm:text-6xl">
 			{data.settings.headline}
 		</h1>
-		<p class="mt-6 max-w-xl text-lg leading-8 text-muted-foreground">
+		<p class="mx-auto mt-6 max-w-xl text-lg leading-8 text-muted-foreground xl:mx-0">
 			{data.settings.intro_text}
 		</p>
 		{#if data.socialLinks.length}<div
-				class="mt-6 flex flex-wrap justify-center gap-2 lg:justify-start"
+				class="mt-6 flex flex-wrap justify-center gap-2 xl:justify-start"
 			>
 				{#each data.socialLinks as link (link.url)}<a
 						href={link.url}
@@ -46,7 +46,7 @@
 						>{link.label}<ExternalLink class="size-3.5" aria-hidden="true" /></a
 					>{/each}
 			</div>{/if}
-		<div class="mt-8 flex flex-wrap items-center justify-center gap-4 lg:justify-start">
+		<div class="mt-8 flex flex-wrap items-center justify-center gap-4 xl:justify-start">
 			<Button href="/sawer" size="lg" class="h-12 rounded-full px-7"
 				>Kirim sawer <ArrowRight class="size-4" /></Button
 			>
@@ -70,7 +70,7 @@
 				>
 			</div>
 			<div class="my-6 border-t border-dashed"></div>
-			<p class="font-heading text-2xl">“Yang kecil tetap berarti ketika datang bersama.”</p>
+			<p class="font-heading text-2xl">“{data.settings.receipt_quote}”</p>
 			<div class="mt-8 flex items-center gap-3 text-sm text-muted-foreground">
 				<span class="grid size-8 place-items-center rounded-full bg-primary text-primary-foreground"
 					>♥</span

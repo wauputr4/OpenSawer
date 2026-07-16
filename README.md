@@ -79,9 +79,11 @@ Salin `.env.example`, lalu ubah nilai berikut sesuai lingkungan:
 | `MIDTRANS_SERVER_KEY`           | Server Key Midtrans; dapat disimpan lewat admin  | Untuk pembayaran nyata |
 | `GOOGLE_CLIENT_ID`              | OAuth Client ID untuk identitas donatur          | Opsional               |
 | `GOOGLE_CLIENT_SECRET`          | OAuth Client Secret untuk identitas donatur      | Opsional               |
+| `GOOGLE_REDIRECT_URI`           | Callback OAuth yang didaftarkan di Google        | Untuk login Google     |
 | `SMTP_*`                        | Pengiriman kode verifikasi email                 | Opsional               |
-| `TURNSTILE_SITE_KEY`            | Widget keamanan login admin                      | Opsional               |
+| `PUBLIC_TURNSTILE_SITE_KEY`     | Widget keamanan login admin                      | Opsional               |
 | `TURNSTILE_SECRET_KEY`          | Validasi Turnstile server-side                   | Opsional               |
+| `TURNSTILE_ENABLED`             | Aktifkan Turnstile jika kedua key tersedia       | Opsional               |
 
 Buat session secret dan hash password admin:
 
@@ -122,13 +124,13 @@ Google adalah pilihan awal ketika donatur menonaktifkan mode anonim. Untuk menga
    https://domain-anda.example/auth/google/callback
    ```
 
-3. Isi `GOOGLE_CLIENT_ID` dan `GOOGLE_CLIENT_SECRET`.
+3. Isi `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, dan `GOOGLE_REDIRECT_URI` dengan URI yang sama.
 
 Jika Google belum dikonfigurasi, UI menawarkan verifikasi email. Isi konfigurasi `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, dan `SMTP_FROM` agar kode dapat dikirim di production.
 
 ## Turnstile opsional
 
-Cloudflare Turnstile hanya muncul di login admin jika `TURNSTILE_SITE_KEY` dan `TURNSTILE_SECRET_KEY` terisi. Jika salah satu kosong, Turnstile tidak dirender dan login tetap menggunakan username serta password.
+Cloudflare Turnstile hanya muncul di login admin jika `TURNSTILE_ENABLED=true`, `PUBLIC_TURNSTILE_SITE_KEY`, dan `TURNSTILE_SECRET_KEY` terisi. Jika tidak lengkap, Turnstile tidak dirender dan login tetap menggunakan username serta password.
 
 ## Menjalankan dengan Docker Compose
 

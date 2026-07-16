@@ -1,6 +1,7 @@
 export function turnstileSiteKey(): string {
-	return process.env.TURNSTILE_SITE_KEY && process.env.TURNSTILE_SECRET_KEY
-		? process.env.TURNSTILE_SITE_KEY
+	const siteKey = process.env.PUBLIC_TURNSTILE_SITE_KEY || process.env.TURNSTILE_SITE_KEY;
+	return process.env.TURNSTILE_ENABLED !== 'false' && siteKey && process.env.TURNSTILE_SECRET_KEY
+		? siteKey
 		: '';
 }
 

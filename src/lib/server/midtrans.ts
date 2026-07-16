@@ -13,6 +13,7 @@ type MidtransStatus = {
 };
 
 export type MidtransEnvironment = 'sandbox' | 'production';
+export type PaymentStatus = 'created' | 'pending' | 'paid' | 'failed' | 'expired' | 'refunded';
 
 export function midtransConfig() {
 	const environment: MidtransEnvironment =
@@ -65,6 +66,14 @@ export function mapStatus(
 	if (status === 'refund' || status === 'partial_refund') return 'refunded';
 	if (['deny', 'cancel', 'failure'].includes(status)) return 'failed';
 	return 'pending';
+}
+
+export function canTransitionPaymentStatus(current: PaymentStatus, next: PaymentStatus): boolean {
+	return (
+		['created', 'pending'].includes(current) ||
+		(current === 'paid' && next === 'refunded') ||
+		(['failed', 'expired'].includes(current) && next === 'paid')
+	);
 }
 
 export async function createSnap(input: {

@@ -6,6 +6,10 @@ export function googleConfigured(): boolean {
 	return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 }
 
+export function googleRedirectUri(origin: string): string {
+	return process.env.GOOGLE_REDIRECT_URI || new URL('/auth/google/callback', origin).toString();
+}
+
 export async function createGoogleIdentity(email: string): Promise<string> {
 	const payload = Buffer.from(
 		JSON.stringify({ email: email.toLowerCase(), expires: Date.now() + 60 * 60 * 1000 })
