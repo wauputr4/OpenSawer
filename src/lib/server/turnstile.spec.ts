@@ -16,25 +16,23 @@ afterEach(() => {
 });
 
 describe('Turnstile login protection', () => {
-	test('uses official development keys and validates server-side', async () => {
-		process.env.NODE_ENV = 'development';
-		delete process.env.TURNSTILE_SITE_KEY;
-		delete process.env.TURNSTILE_SECRET_KEY;
+	test('validates server-side when both keys are configured', async () => {
+		process.env.TURNSTILE_SITE_KEY = 'site-key';
+		process.env.TURNSTILE_SECRET_KEY = 'secret-key';
 		let requests = 0;
 		globalThis.fetch = (async () => {
 			requests += 1;
 			return new Response('{"success":true}');
 		}) as unknown as typeof fetch;
-		expect(turnstileSiteKey()).toBe('1x00000000000000000000AA');
-		expect(await verifyTurnstile('XXXX.DUMMY.TOKEN.XXXX', '127.0.0.1')).toBe(true);
+		expect(turnstileSiteKey()).toBe('site-key');
+		expect(await verifyTurnstile('token', '127.0.0.1')).toBe(true);
 		expect(requests).toBe(1);
 	});
 
-	test('fails closed without production keys', async () => {
-		process.env.NODE_ENV = 'production';
+	test('is disabled when keys are not configured', async () => {
 		delete process.env.TURNSTILE_SITE_KEY;
 		delete process.env.TURNSTILE_SECRET_KEY;
 		expect(turnstileSiteKey()).toBe('');
-		expect(await verifyTurnstile('token')).toBe(false);
+		expect(await verifyTurnstile('')).toBe(true);
 	});
 });

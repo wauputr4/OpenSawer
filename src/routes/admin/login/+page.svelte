@@ -54,9 +54,7 @@
 					class="cf-turnstile"
 					data-sitekey={data.turnstileSiteKey}
 					data-theme="light"
-				></div>{:else}<p role="alert" class="text-sm text-destructive">
-					Turnstile belum dikonfigurasi.
-				</p>{/if}
+				></div>{/if}
 			<Button type="submit" class="mt-2 w-full rounded-full" size="lg">Masuk</Button>
 		</form>
 	</div>

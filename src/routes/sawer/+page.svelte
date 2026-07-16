@@ -4,6 +4,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
+	import { resolve } from '$app/paths';
 	let { data, form } = $props();
 	const initialAmount = () => String(JSON.parse(data.settings.preset_amounts)[1]);
 	const initialUsername = () => form?.username || '';
@@ -11,7 +12,9 @@
 	const initialCampaign = () =>
 		data.campaigns.find((item: { slug: string }) => item.slug === data.selected)?.id ||
 		data.campaigns[0]?.id;
-	let anonymous = $state(false);
+	const codeRequested = () => form?.action === 'code';
+	let anonymous = $state(!codeRequested());
+	let identityMethod = $state<'google' | 'email'>(codeRequested() ? 'email' : 'google');
 	let amount = $state(initialAmount());
 	let customAmount = $state(false);
 	let username = $state(initialUsername());
@@ -27,7 +30,7 @@
 		<p class="text-sm font-bold tracking-[.16em] text-primary uppercase">Kirim dukungan</p>
 		<h1 class="mt-3 font-heading text-4xl font-semibold">Satu formulir, selesai.</h1>
 		<p class="mt-3 text-muted-foreground">
-			Identitas dan nominal terbuka secara default, tapi pilihan tetap di tanganmu.
+			Kirim secara anonim, atau tampilkan identitas setelah verifikasi.
 		</p>
 	</div>
 
@@ -127,20 +130,57 @@
 				></label
 			>
 			{#if !anonymous}
-				<div class="mt-5 grid gap-3 sm:grid-cols-2">
-					<div>
-						<label for="username" class="mb-1.5 block text-xs font-bold">Username unik</label><Input
-							id="username"
-							name="username"
-							bind:value={username}
-							spellcheck="false"
-							minlength={3}
-							maxlength={30}
-							autocomplete="username"
-							required
-						/>
-					</div>
-					<div>
+				<input type="hidden" name="identity_method" value={identityMethod} />
+				<div class="mt-5 grid grid-cols-2 gap-2" aria-label="Metode verifikasi identitas">
+					<button
+						type="button"
+						onclick={() => (identityMethod = 'google')}
+						aria-pressed={identityMethod === 'google'}
+						class:active-amount={identityMethod === 'google'}
+						class="rounded-xl border px-3 py-2.5 text-sm font-bold">Google</button
+					>
+					<button
+						type="button"
+						onclick={() => (identityMethod = 'email')}
+						aria-pressed={identityMethod === 'email'}
+						class:active-amount={identityMethod === 'email'}
+						class="rounded-xl border px-3 py-2.5 text-sm font-bold">Email</button
+					>
+				</div>
+				<div class="mt-4">
+					<label for="username" class="mb-1.5 block text-xs font-bold">Username unik</label><Input
+						id="username"
+						name="username"
+						bind:value={username}
+						spellcheck="false"
+						minlength={3}
+						maxlength={30}
+						autocomplete="username"
+						required
+					/>
+				</div>
+				{#if identityMethod === 'google'}
+					{#if data.googleEmail}<p
+							class="mt-3 rounded-xl border border-primary/20 bg-primary/8 px-4 py-3 text-sm"
+						>
+							Email Google terverifikasi: <strong>{data.googleEmail}</strong>
+						</p>{:else if data.googleConfigured}<Button
+							href={resolve('/auth/google')}
+							variant="outline"
+							class="mt-3 w-full">Lanjutkan dengan Google</Button
+						>{:else}<div class="mt-3 rounded-xl border p-4 text-sm text-muted-foreground">
+							<p>Login Google belum dikonfigurasi oleh pengelola.</p>
+							<button
+								type="button"
+								onclick={() => (identityMethod = 'email')}
+								class="mt-2 font-bold text-primary hover:underline">Gunakan email</button
+							>
+						</div>{/if}
+					{#if data.googleStatus === 'failed'}<p class="mt-2 text-sm text-destructive">
+							Login Google gagal. Coba lagi atau gunakan email.
+						</p>{/if}
+				{:else}
+					<div class="mt-3">
 						<label for="email" class="mb-1.5 block text-xs font-bold">Email privat</label><Input
 							id="email"
 							name="email"
@@ -151,25 +191,25 @@
 							required
 						/>
 					</div>
-				</div>
-				<div class="mt-3 flex gap-2">
-					<Input
-						name="code"
-						inputmode="numeric"
-						pattern={'[0-9]{6}'}
-						spellcheck="false"
-						maxlength={6}
-						placeholder="Kode 6 digit"
-						aria-label="Kode verifikasi"
-						required
-					/><Button
-						type="submit"
-						formnovalidate
-						formaction="?/requestCode"
-						variant="outline"
-						class="shrink-0"><Mail class="size-4" /> Kirim kode</Button
-					>
-				</div>
+					<div class="mt-3 flex gap-2">
+						<Input
+							name="code"
+							inputmode="numeric"
+							pattern={'[0-9]{6}'}
+							spellcheck="false"
+							maxlength={6}
+							placeholder="Kode 6 digit"
+							aria-label="Kode verifikasi"
+							required
+						/><Button
+							type="submit"
+							formnovalidate
+							formaction="?/requestCode"
+							variant="outline"
+							class="shrink-0"><Mail class="size-4" /> Kirim kode</Button
+						>
+					</div>
+				{/if}
 			{/if}
 		</div>
 

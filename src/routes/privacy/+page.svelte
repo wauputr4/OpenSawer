@@ -44,9 +44,9 @@
 		<section>
 			<h2 class="font-heading text-2xl font-semibold text-foreground">Pihak ketiga</h2>
 			<p class="mt-3">
-				Data pembayaran diteruskan kepada penyedia pembayaran yang digunakan pengelola. Cloudflare
-				Turnstile digunakan pada login admin untuk membantu mencegah akses otomatis dan dapat
-				memproses data teknis perangkat atau jaringan.
+				Data pembayaran diteruskan kepada penyedia pembayaran yang digunakan pengelola. Jika
+				dikonfigurasi, Google memverifikasi email pemberi dukungan dan Cloudflare Turnstile membantu
+				melindungi login admin. Keduanya dapat memproses data teknis perangkat atau jaringan.
 			</p>
 		</section>
 		<section>

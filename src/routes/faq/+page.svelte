@@ -12,9 +12,9 @@
 				'Bisa. Pilih opsi anonim agar nama dan email tidak diperlukan. Nominal serta nama juga dapat disembunyikan dari halaman publik.'
 		},
 		{
-			question: 'Mengapa email diperlukan saat memakai username?',
+			question: 'Bagaimana cara memakai username?',
 			answer:
-				'Email dipakai untuk memverifikasi kepemilikan username unik. Email tidak ditampilkan di halaman publik.'
+				'Hubungkan Google atau gunakan kode verifikasi email untuk membuktikan identitas username unik. Email tidak ditampilkan di halaman publik.'
 		},
 		{
 			question: 'Kapan dukungan masuk ke total dan ranking?',

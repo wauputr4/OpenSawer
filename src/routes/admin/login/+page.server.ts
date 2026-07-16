@@ -17,7 +17,10 @@ export const actions: Actions = {
 		} catch {
 			// Turnstile accepts an omitted remote address.
 		}
-		if (!(await verifyTurnstile(String(data.get('cf-turnstile-response') || ''), clientAddress))) {
+		if (
+			turnstileSiteKey() &&
+			!(await verifyTurnstile(String(data.get('cf-turnstile-response') || ''), clientAddress))
+		) {
 			await new Promise((resolve) => setTimeout(resolve, 1_000));
 			return fail(400, { error: 'Verifikasi keamanan gagal. Muat ulang lalu coba lagi.' });
 		}

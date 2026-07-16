@@ -16,8 +16,8 @@ The instance owner manages campaigns, donations, visibility, branding, and Midtr
 2. Select a campaign. The default is `Sawer aku` with no target.
 3. Select a preset amount or choose `Nominal lain` to enter a custom amount.
 4. Add an optional message.
-5. Optionally open `Privasi tampilan` to change visibility. Identity and amount are public by default.
-6. For a public identity, enter a unique username and email, then verify that email with a one-time code for the donation session.
+5. Donations start anonymous. Turn off anonymity to use a public identity.
+6. For a public identity, enter a unique username and verify with Google by default or an email one-time code.
 7. Continue to Midtrans Snap.
 8. Wait for the server to verify the Midtrans notification.
 9. Show the final payment state and update public totals/rankings when paid.
@@ -35,7 +35,7 @@ Each donation stores two independent public choices:
 | No             | Yes         | `Anonim — Rp100.000`             |
 | No             | No          | `Anonim — Nominal disembunyikan` |
 
-The admin can change the instance defaults, but the initial defaults are `show supporter = true` and `show amount = true`. Email is always private.
+The admin can change the visibility defaults. The donation form starts anonymous, while the amount follows the instance default. Email is always private.
 
 ## Campaigns
 

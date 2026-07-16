@@ -1,16 +1,12 @@
-const testSiteKey = '1x00000000000000000000AA';
-const testSecretKey = '1x0000000000000000000000000000000AA';
-
 export function turnstileSiteKey(): string {
-	return (
-		process.env.TURNSTILE_SITE_KEY || (process.env.NODE_ENV === 'production' ? '' : testSiteKey)
-	);
+	return process.env.TURNSTILE_SITE_KEY && process.env.TURNSTILE_SECRET_KEY
+		? process.env.TURNSTILE_SITE_KEY
+		: '';
 }
 
 export async function verifyTurnstile(token: string, remoteIp?: string): Promise<boolean> {
-	const secret =
-		process.env.TURNSTILE_SECRET_KEY ||
-		(process.env.NODE_ENV === 'production' ? '' : testSecretKey);
+	const secret = process.env.TURNSTILE_SECRET_KEY;
+	if (!turnstileSiteKey()) return true;
 	if (!secret || !token) return false;
 	const body = new FormData();
 	body.set('secret', secret);

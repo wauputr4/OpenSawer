@@ -8,8 +8,8 @@ OpenSawer is a small, self-hosted donation page for Indonesian creators and comm
 
 - One self-hosted instance represents one creator or organization.
 - Donors do not have accounts or passwords.
-- Named donors verify ownership of a unique username through email.
-- Donors can hide their identity, donation amount, or both. Both are public by default.
+- Donations are anonymous by default. Named donors verify a unique username through Google or email.
+- Donors can independently hide their identity and donation amount.
 - Every donation belongs to a campaign. A default `Sawer aku` campaign without a target is always available.
 - Campaign targets are optional.
 - Rankings include successful donations only and respect donor visibility choices.
@@ -27,6 +27,9 @@ OpenSawer is not a marketplace, storefront, multi-tenant SaaS, page builder, or 
 | `/sawer/{id}`  | Pending, successful, expired, or failed payment status            |
 | `/admin/login` | Single-owner admin login                                          |
 | `/admin`       | Summary, donations, campaigns, and settings in one dashboard      |
+| `/faq`         | Donation and payment questions                                    |
+| `/terms`       | Public service terms                                              |
+| `/privacy`     | Public privacy policy                                             |
 
 ## Stack
 
@@ -64,9 +67,9 @@ Open `http://localhost:5173`. The example environment enables `MIDTRANS_MOCK=tru
 Before a production run:
 
 1. Set a long `OPENSAWER_SESSION_SECRET` and a Bun password hash in `OPENSAWER_ADMIN_PASSWORD_HASH`.
-2. Configure real Cloudflare Turnstile site and secret keys.
+2. Optionally configure Cloudflare Turnstile site and secret keys for admin login protection.
 3. Save and test Midtrans keys from the admin Setting menu, then configure the HTTPS notification URL as `/webhooks/midtrans`.
-4. Configure SMTP for named donors and set the public `ORIGIN`.
+4. Configure Google OAuth, SMTP, or both for named donors, then set the public `ORIGIN`.
 5. Mount `data/` and `.env` persistently, then keep one application writer.
 
 Quality checks:

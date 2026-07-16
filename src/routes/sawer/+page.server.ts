@@ -2,6 +2,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { activeCampaigns, getDb, settings } from '$lib/server/db';
 import { codeHash, sendCode } from '$lib/server/email';
+import { googleConfigured, googleCookieName, googleIdentity } from '$lib/server/google';
 import { createSnap } from '$lib/server/midtrans';
 
 const text = (data: FormData, key: string) => String(data.get(key) || '').trim();
@@ -10,10 +11,13 @@ const usernameValue = (data: FormData) => text(data, 'username').toLowerCase();
 const validEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 const validUsername = (value: string) => /^[a-z0-9][a-z0-9_-]{2,29}$/.test(value);
 
-export const load: PageServerLoad = ({ url }) => ({
+export const load: PageServerLoad = async ({ url, cookies }) => ({
 	settings: settings(),
 	campaigns: activeCampaigns(),
-	selected: url.searchParams.get('campaign') || ''
+	selected: url.searchParams.get('campaign') || '',
+	googleConfigured: googleConfigured(),
+	googleEmail: await googleIdentity(cookies.get(googleCookieName)),
+	googleStatus: url.searchParams.get('google') || ''
 });
 
 export const actions: Actions = {
@@ -78,7 +82,7 @@ export const actions: Actions = {
 		}
 	},
 
-	donate: async ({ request }) => {
+	donate: async ({ request, cookies }) => {
 		const data = await request.formData();
 		const anonymous = data.get('anonymous') === 'on';
 		const amount = Number(text(data, 'amount'));
@@ -98,21 +102,39 @@ export const actions: Actions = {
 		let name = 'Anonim';
 		let email: string | undefined;
 		if (!anonymous) {
-			email = emailValue(data);
 			const username = usernameValue(data);
-			const code = text(data, 'code');
-			if (!validUsername(username) || !validEmail(email) || !/^\d{6}$/.test(code))
+			if (!validUsername(username))
 				return fail(400, {
 					action: 'donate',
-					error: 'Lengkapi username, email, dan kode 6 digit.'
+					error: 'Username harus 3–30 karakter: huruf kecil, angka, _ atau -.'
 				});
-			const verification = db
-				.query<{ id: number }, [string, string, string]>(
-					'SELECT id FROM email_verifications WHERE email = ? AND username = ? AND token_hash = ? AND used_at IS NULL AND expires_at > CURRENT_TIMESTAMP ORDER BY id DESC LIMIT 1'
-				)
-				.get(email, username, codeHash(email, username, code));
-			if (!verification)
-				return fail(400, { action: 'donate', error: 'Kode verifikasi salah atau kedaluwarsa.' });
+			let verificationId: number | undefined;
+			if (text(data, 'identity_method') === 'google') {
+				email = await googleIdentity(cookies.get(googleCookieName));
+				if (!email)
+					return fail(400, {
+						action: 'donate',
+						error: 'Hubungkan akun Google terlebih dahulu.'
+					});
+			} else {
+				email = emailValue(data);
+				const code = text(data, 'code');
+				if (!validEmail(email) || !/^\d{6}$/.test(code))
+					return fail(400, {
+						action: 'donate',
+						error: 'Lengkapi email dan kode 6 digit.'
+					});
+				verificationId = db
+					.query<{ id: number }, [string, string, string]>(
+						'SELECT id FROM email_verifications WHERE email = ? AND username = ? AND token_hash = ? AND used_at IS NULL AND expires_at > CURRENT_TIMESTAMP ORDER BY id DESC LIMIT 1'
+					)
+					.get(email, username, codeHash(email, username, code))?.id;
+				if (!verificationId)
+					return fail(400, {
+						action: 'donate',
+						error: 'Kode verifikasi salah atau kedaluwarsa.'
+					});
+			}
 			const conflict = db
 				.query<{ id: number; username: string; email: string }, [string, string]>(
 					'SELECT id, username, email FROM donors WHERE username = ? COLLATE NOCASE OR email = ? COLLATE NOCASE LIMIT 1'
@@ -132,9 +154,10 @@ export const actions: Actions = {
 						)
 						.get(username, email)?.id
 				);
-			db.query('UPDATE email_verifications SET used_at = CURRENT_TIMESTAMP WHERE id = ?').run(
-				verification.id
-			);
+			if (verificationId)
+				db.query('UPDATE email_verifications SET used_at = CURRENT_TIMESTAMP WHERE id = ?').run(
+					verificationId
+				);
 			name = username;
 		}
 

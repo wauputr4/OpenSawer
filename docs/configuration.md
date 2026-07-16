@@ -16,6 +16,9 @@ OPENSAWER_ADMIN_PASSWORD_HASH=
 TURNSTILE_SITE_KEY=
 TURNSTILE_SECRET_KEY=
 
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
 MIDTRANS_ENV=sandbox
 MIDTRANS_MERCHANT_ID=
 MIDTRANS_SERVER_KEY=
@@ -31,7 +34,9 @@ SMTP_FROM=no-reply@example.com
 
 `ORIGIN` is required by the self-hosted SvelteKit server for correct public URLs and form-origin checks. Never commit `.env`, database files, uploads, Midtrans keys, SMTP credentials, or session secrets.
 
-Admin login validates Cloudflare Turnstile server-side. Local development uses Cloudflare's always-pass test keys when both Turnstile variables are empty. Production fails closed until real `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` values are configured.
+Turnstile is optional. The admin login only renders and validates it when both `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` are configured.
+
+Google is the default named-donor method when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are configured. Register `${ORIGIN}/auth/google/callback` as an authorized redirect URI. Email OTP remains available as the fallback.
 
 `MIDTRANS_MOCK=true` is only for local UI development. It adds a server-side payment simulation action and must never be enabled on a public deployment. Without SMTP, local development returns the OTP in the page response; production rejects OTP delivery until SMTP is configured.
 

@@ -50,7 +50,7 @@ Created only for named donors. Donors do not have accounts or passwords.
 | `verified_at` | Required before public attribution   |
 | `created_at`  | UTC timestamp                        |
 
-Every named donation must prove possession of the matching email with a one-time code. A short-lived verified browser cookie may avoid repeating the code within the same donation session, but matching an email and username alone is never sufficient.
+Every named donation must prove possession of the matching email through Google OAuth or a one-time email code. Google verification uses a short-lived signed browser cookie; matching an email and username alone is never sufficient.
 
 ## `donations`
 
