@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.example
+data/
+uploads/
+*.db
+*.db-shm
+*.db-wal
+.DS_Store
+.codex/
+
