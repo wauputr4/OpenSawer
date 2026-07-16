@@ -50,7 +50,7 @@
 
 	<form
 		method="POST"
-		action="?/donate"
+		action="/sawer?/donate"
 		class="space-y-7 rounded-[1.75rem] border bg-card p-5 shadow-[0_24px_70px_-52px_rgba(15,81,63,.6)] sm:p-8"
 	>
 		<div>
@@ -130,11 +130,6 @@
 					></span
 				></label
 			>
-			{#if anonymous && data.googleConfigured}<Button
-					href={resolve('/auth/google')}
-					variant="outline"
-					class="mt-4 w-full">Lanjutkan dengan Google</Button
-				>{/if}
 			{#if !anonymous}
 				<input type="hidden" name="identity_method" value={identityMethod} />
 				<div class="mt-5 grid grid-cols-2 gap-2" aria-label="Metode verifikasi identitas">
@@ -210,7 +205,7 @@
 						/><Button
 							type="submit"
 							formnovalidate
-							formaction="?/requestCode"
+							formaction="/sawer?/requestCode"
 							variant="outline"
 							class="shrink-0"><Mail class="size-4" /> Kirim kode</Button
 						>
@@ -258,7 +253,7 @@
 				<p class="text-xs text-muted-foreground">Total pembayaran</p>
 				<p class="text-xl font-bold">{rupiah(Number(amount) || 0)}</p>
 			</div>
-			<Button type="submit" formaction="?/donate" size="lg" class="rounded-full px-6"
+			<Button type="submit" size="lg" class="rounded-full px-6"
 				><LockKeyhole class="size-4" /> Lanjut bayar</Button
 			>
 		</div>
