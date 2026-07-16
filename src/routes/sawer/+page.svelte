@@ -13,7 +13,8 @@
 		data.campaigns.find((item: { slug: string }) => item.slug === data.selected)?.id ||
 		data.campaigns[0]?.id;
 	const codeRequested = () => form?.action === 'code';
-	let anonymous = $state(!codeRequested());
+	const initialAnonymous = () => !codeRequested() && !data.googleEmail;
+	let anonymous = $state(initialAnonymous());
 	let identityMethod = $state<'google' | 'email'>(codeRequested() ? 'email' : 'google');
 	let amount = $state(initialAmount());
 	let customAmount = $state(false);
@@ -129,6 +130,11 @@
 					></span
 				></label
 			>
+			{#if anonymous && data.googleConfigured}<Button
+					href={resolve('/auth/google')}
+					variant="outline"
+					class="mt-4 w-full">Lanjutkan dengan Google</Button
+				>{/if}
 			{#if !anonymous}
 				<input type="hidden" name="identity_method" value={identityMethod} />
 				<div class="mt-5 grid grid-cols-2 gap-2" aria-label="Metode verifikasi identitas">

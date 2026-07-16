@@ -8,9 +8,26 @@
 	onMount(() => {
 		if (!data.turnstileSiteKey) return;
 		const script = document.createElement('script');
-		script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+		script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
 		script.async = true;
 		script.defer = true;
+		script.onload = () => {
+			const turnstile = (
+				window as typeof window & {
+					turnstile?: {
+						render: (
+							selector: string,
+							options: { sitekey: string; theme: string; appearance: string }
+						) => string;
+					};
+				}
+			).turnstile;
+			turnstile?.render('#turnstile-widget', {
+				sitekey: data.turnstileSiteKey,
+				theme: 'light',
+				appearance: 'always'
+			});
+		};
 		document.head.appendChild(script);
 		return () => script.remove();
 	});
@@ -50,11 +67,10 @@
 					required
 				/>
 			</div>
-			{#if data.turnstileSiteKey}<div
-					class="cf-turnstile"
-					data-sitekey={data.turnstileSiteKey}
-					data-theme="light"
-				></div>{/if}
+			{#if data.turnstileSiteKey}<div class="rounded-xl border bg-background p-3">
+					<p class="mb-2 text-xs font-bold text-muted-foreground">Cloudflare Turnstile</p>
+					<div id="turnstile-widget" class="min-h-16"></div>
+				</div>{/if}
 			<Button type="submit" class="mt-2 w-full rounded-full" size="lg">Masuk</Button>
 		</form>
 	</div>
