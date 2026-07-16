@@ -15,7 +15,9 @@ export type Campaign = {
 
 export type SiteSettings = {
 	site_name: string;
+	creator_name: string;
 	headline: string;
+	intro_text: string;
 	profile_image_url: string;
 	social_links: string;
 	minimum_amount: number;
@@ -27,7 +29,8 @@ export type SiteSettings = {
 
 const schema = `
 CREATE TABLE IF NOT EXISTS site_settings (
- id INTEGER PRIMARY KEY CHECK (id = 1), site_name TEXT NOT NULL, headline TEXT NOT NULL,
+ id INTEGER PRIMARY KEY CHECK (id = 1), site_name TEXT NOT NULL, creator_name TEXT NOT NULL DEFAULT 'Nama Creator', headline TEXT NOT NULL,
+	intro_text TEXT NOT NULL DEFAULT 'Kirim dukungan tanpa membuat akun. Pilih nominal, tulis pesan, lalu selesaikan pembayaran dengan aman.',
  minimum_amount INTEGER NOT NULL CHECK (minimum_amount > 0), preset_amounts TEXT NOT NULL,
  default_show_supporter INTEGER NOT NULL DEFAULT 1 CHECK (default_show_supporter IN (0,1)),
 	default_show_amount INTEGER NOT NULL DEFAULT 1 CHECK (default_show_amount IN (0,1)),
@@ -88,12 +91,23 @@ export function getDb(path = process.env.OPENSAWER_DB_PATH || './data/opensawer.
 		);
 	if (!settingColumns.has('social_links'))
 		database.exec("ALTER TABLE site_settings ADD COLUMN social_links TEXT NOT NULL DEFAULT '[]'");
+	if (!settingColumns.has('creator_name'))
+		database.exec(
+			"ALTER TABLE site_settings ADD COLUMN creator_name TEXT NOT NULL DEFAULT 'Nama Creator'"
+		);
+	if (!settingColumns.has('intro_text'))
+		database.exec(
+			"ALTER TABLE site_settings ADD COLUMN intro_text TEXT NOT NULL DEFAULT 'Kirim dukungan tanpa membuat akun. Pilih nominal, tulis pesan, lalu selesaikan pembayaran dengan aman.'"
+		);
 	database.run(`INSERT OR IGNORE INTO site_settings
 		(id, site_name, headline, minimum_amount, preset_amounts)
 		VALUES (1, 'OpenSawer', 'Dukungan kecil, langkah yang berarti.', 10000, '[10000,25000,50000,100000]')`);
 	database.run(`INSERT OR IGNORE INTO campaigns
 		(slug, name, kind, description, is_default, is_active)
-		VALUES ('general-support', 'Dukungan Umum', 'general', 'Bantu karya ini terus berjalan.', 1, 1)`);
+		VALUES ('general-support', 'Sawer aku', 'general', 'Bantu karya ini terus berjalan.', 1, 1)`);
+	database.run(
+		"UPDATE campaigns SET name = 'Sawer aku' WHERE is_default = 1 AND name = 'Dukungan Umum'"
+	);
 	return database;
 }
 

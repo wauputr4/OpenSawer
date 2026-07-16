@@ -45,7 +45,7 @@ bun -e "console.log(await Bun.password.hash('replace-this-password'))"
 | Show supporter      | Open                        |
 | Show amount         | Open                        |
 | Ranking             | Enabled                     |
-| Initial campaign    | General Support             |
+| Initial campaign    | Sawer aku                   |
 | Campaign target     | None                        |
 | Payment environment | Sandbox                     |
 

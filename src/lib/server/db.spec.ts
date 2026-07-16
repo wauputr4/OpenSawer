@@ -18,7 +18,11 @@ describe('database defaults', () => {
 		expect(settings().default_show_amount).toBe(1);
 		expect(settings().profile_image_url).toBe('');
 		expect(settings().social_links).toBe('[]');
-		expect(activeCampaigns()).toMatchObject([{ is_default: 1, target_amount: null }]);
+		expect(settings().creator_name).toBe('Nama Creator');
+		expect(settings().intro_text).toContain('Kirim dukungan tanpa membuat akun');
+		expect(activeCampaigns()).toMatchObject([
+			{ name: 'Sawer aku', is_default: 1, target_amount: null }
+		]);
 	});
 
 	test('ranking orders hidden amounts while respecting public identity', () => {

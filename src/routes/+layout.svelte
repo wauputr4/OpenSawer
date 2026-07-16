@@ -1,8 +1,6 @@
 <script lang="ts">
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
-	import { resolve } from '$app/paths';
-	import LogoMark from '$lib/components/logo-mark.svelte';
 
 	let { children } = $props();
 </script>
@@ -18,21 +16,6 @@
 
 <div class="min-h-screen">
 	<a href="#main-content" class="skip-link">Lewati ke konten utama</a>
-	<header class="mx-auto flex max-w-6xl items-center justify-between px-5 py-5 lg:px-8">
-		<a
-			href={resolve('/')}
-			class="group flex items-center gap-2.5 font-semibold tracking-tight"
-			aria-label="OpenSawer beranda"
-		>
-			<span class="transition-transform group-hover:-rotate-6"><LogoMark /></span>
-			OpenSawer
-		</a>
-		<a
-			href={resolve('/sawer')}
-			class="text-sm font-semibold text-primary underline-offset-4 hover:underline"
-			>Kirim dukungan</a
-		>
-	</header>
 	<main id="main-content" tabindex="-1">{@render children()}</main>
 	<footer class="mx-auto flex max-w-6xl justify-center px-5 py-10 text-sm lg:px-8">
 		<a

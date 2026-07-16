@@ -19,7 +19,7 @@
 		>
 			{#if data.settings.profile_image_url}<img
 					src={data.settings.profile_image_url}
-					alt={`Foto profil ${data.settings.site_name}`}
+					alt={`Foto profil ${data.settings.creator_name}`}
 					width="96"
 					height="96"
 					class="size-full object-cover"
@@ -27,14 +27,13 @@
 				/>{:else}<LogoMark />{/if}
 		</div>
 		<p class="mb-3 text-sm font-bold tracking-[.18em] text-primary uppercase">
-			{data.settings.site_name}
+			{data.settings.creator_name}
 		</p>
 		<h1 class="font-heading text-5xl leading-[1.03] font-semibold text-balance sm:text-6xl">
 			{data.settings.headline}
 		</h1>
 		<p class="mt-6 max-w-xl text-lg leading-8 text-muted-foreground">
-			Kirim dukungan tanpa membuat akun. Pilih nominal, tulis pesan, lalu selesaikan pembayaran
-			dengan aman.
+			{data.settings.intro_text}
 		</p>
 		{#if data.socialLinks.length}<div
 				class="mt-6 flex flex-wrap justify-center gap-2 lg:justify-start"

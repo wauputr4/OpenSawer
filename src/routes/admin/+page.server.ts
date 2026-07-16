@@ -5,7 +5,11 @@ import { getDb, parseSocialLinks, settings, slugify } from '$lib/server/db';
 
 type AdminCampaign = {
 	id: number;
+	slug: string;
 	name: string;
+	kind: string;
+	description: string;
+	target_amount: number | null;
 	is_default: number;
 	is_active: number;
 	total: number;
@@ -28,6 +32,23 @@ function guard(admin: boolean): void {
 	if (!admin) throw redirect(303, '/admin/login');
 }
 const value = (form: FormData, key: string) => String(form.get(key) || '').trim();
+
+function campaignValues(form: FormData) {
+	const name = value(form, 'name');
+	const slug = slugify(value(form, 'slug') || name);
+	const targetInput = value(form, 'target_amount');
+	const target = targetInput ? Number(targetInput) : null;
+	if (!name || !slug) return { error: 'Nama campaign wajib diisi.' };
+	if (target !== null && (!Number.isSafeInteger(target) || target <= 0))
+		return { error: 'Target campaign harus berupa bilangan bulat positif.' };
+	return {
+		name: name.slice(0, 100),
+		slug,
+		kind: value(form, 'kind') || 'other',
+		description: value(form, 'description').slice(0, 280),
+		target
+	};
+}
 
 export const load: PageServerLoad = ({ locals }) => {
 	guard(locals.admin);
@@ -65,32 +86,45 @@ export const actions: Actions = {
 		try {
 			socialLinks = parseSocialLinks(value(form, 'social_links'));
 		} catch {
-			return fail(400, { error: 'Gunakan format tautan: Label | https://alamat.tld' });
+			return fail(400, {
+				error: 'Gunakan format tautan: Label | https://alamat.tld',
+				view: 'settings'
+			});
 		}
 		const profileImageUrl = value(form, 'profile_image_url');
 		if (profileImageUrl) {
 			try {
 				if (!['http:', 'https:'].includes(new URL(profileImageUrl).protocol)) throw new Error();
 			} catch {
-				return fail(400, { error: 'URL foto profil harus berupa alamat http atau https.' });
+				return fail(400, {
+					error: 'URL foto profil harus berupa alamat http atau https.',
+					view: 'settings'
+				});
 			}
 		}
 		if (
 			!value(form, 'site_name') ||
+			!value(form, 'creator_name') ||
 			!value(form, 'headline') ||
+			!value(form, 'intro_text') ||
 			!Number.isSafeInteger(minimum) ||
 			minimum < 1000 ||
 			presets.length < 2 ||
 			presets.some((preset) => preset < minimum)
 		)
-			return fail(400, { error: 'Periksa nama, headline, nominal minimum, dan preset.' });
+			return fail(400, {
+				error: 'Periksa nama, headline, nominal minimum, dan preset.',
+				view: 'settings'
+			});
 		getDb()
 			.query(
-				`UPDATE site_settings SET site_name=?, headline=?, profile_image_url=?, social_links=?, minimum_amount=?, preset_amounts=?, default_show_supporter=?, default_show_amount=?, ranking_enabled=?, updated_at=CURRENT_TIMESTAMP WHERE id=1`
+				`UPDATE site_settings SET site_name=?, creator_name=?, headline=?, intro_text=?, profile_image_url=?, social_links=?, minimum_amount=?, preset_amounts=?, default_show_supporter=?, default_show_amount=?, ranking_enabled=?, updated_at=CURRENT_TIMESTAMP WHERE id=1`
 			)
 			.run(
 				value(form, 'site_name').slice(0, 80),
+				value(form, 'creator_name').slice(0, 80),
 				value(form, 'headline').slice(0, 180),
+				value(form, 'intro_text').slice(0, 280),
 				profileImageUrl,
 				JSON.stringify(socialLinks),
 				minimum,
@@ -99,34 +133,50 @@ export const actions: Actions = {
 				form.get('default_show_amount') === 'on' ? 1 : 0,
 				form.get('ranking_enabled') === 'on' ? 1 : 0
 			);
-		return { success: 'Pengaturan disimpan.' };
+		return { success: 'Pengaturan disimpan.', view: 'settings' };
 	},
 	campaign: async ({ request, locals }) => {
 		guard(locals.admin);
 		const form = await request.formData();
-		const name = value(form, 'name');
-		const slug = slugify(value(form, 'slug') || name);
-		const targetInput = value(form, 'target_amount');
-		const target = targetInput ? Number(targetInput) : null;
-		if (!name || !slug) return fail(400, { error: 'Nama campaign wajib diisi.' });
-		if (target !== null && (!Number.isSafeInteger(target) || target <= 0))
-			return fail(400, { error: 'Target campaign harus berupa bilangan bulat positif.' });
+		const campaign = campaignValues(form);
+		if ('error' in campaign) return fail(400, { error: campaign.error, view: 'campaigns' });
 		try {
 			getDb()
 				.query(
 					'INSERT INTO campaigns (slug,name,kind,description,target_amount) VALUES (?,?,?,?,?)'
 				)
-				.run(
-					slug,
-					name.slice(0, 100),
-					value(form, 'kind') || 'other',
-					value(form, 'description').slice(0, 280),
-					target
-				);
+				.run(campaign.slug, campaign.name, campaign.kind, campaign.description, campaign.target);
 		} catch {
-			return fail(409, { error: 'Slug campaign sudah dipakai.' });
+			return fail(409, { error: 'Slug campaign sudah dipakai.', view: 'campaigns' });
 		}
-		return { success: 'Campaign dibuat.' };
+		return { success: 'Campaign dibuat.', view: 'campaigns' };
+	},
+	updateCampaign: async ({ request, locals }) => {
+		guard(locals.admin);
+		const form = await request.formData();
+		const id = Number(value(form, 'id'));
+		const campaign = campaignValues(form);
+		if (!Number.isSafeInteger(id) || 'error' in campaign)
+			return fail(400, { error: 'Periksa kembali data campaign.', view: 'campaigns' });
+		try {
+			const result = getDb()
+				.query(
+					'UPDATE campaigns SET slug=?, name=?, kind=?, description=?, target_amount=?, updated_at=CURRENT_TIMESTAMP WHERE id=?'
+				)
+				.run(
+					campaign.slug,
+					campaign.name,
+					campaign.kind,
+					campaign.description,
+					campaign.target,
+					id
+				);
+			if (!result.changes)
+				return fail(404, { error: 'Campaign tidak ditemukan.', view: 'campaigns' });
+		} catch {
+			return fail(409, { error: 'Slug campaign sudah dipakai.', view: 'campaigns' });
+		}
+		return { success: 'Campaign diperbarui.', view: 'campaigns' };
 	},
 	toggleCampaign: async ({ request, locals }) => {
 		guard(locals.admin);
@@ -137,7 +187,7 @@ export const actions: Actions = {
 				'UPDATE campaigns SET is_active = CASE is_active WHEN 1 THEN 0 ELSE 1 END, updated_at=CURRENT_TIMESTAMP WHERE id=? AND is_default=0'
 			)
 			.run(id);
-		return { success: 'Status campaign diperbarui.' };
+		return { success: 'Status campaign diperbarui.', view: 'campaigns' };
 	},
 	toggleRanking: async ({ request, locals }) => {
 		guard(locals.admin);
@@ -147,7 +197,7 @@ export const actions: Actions = {
 				'UPDATE donations SET show_in_ranking = CASE show_in_ranking WHEN 1 THEN 0 ELSE 1 END WHERE public_id=?'
 			)
 			.run(value(form, 'id'));
-		return { success: 'Visibilitas ranking diperbarui.' };
+		return { success: 'Visibilitas ranking diperbarui.', view: 'history' };
 	},
 	logout: ({ cookies }) => {
 		clearAdminCookie(cookies);

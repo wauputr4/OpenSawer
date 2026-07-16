@@ -10,7 +10,7 @@ OpenSawer is a small, self-hosted donation page for Indonesian creators and comm
 - Donors do not have accounts or passwords.
 - Named donors verify ownership of a unique username through email.
 - Donors can hide their identity, donation amount, or both. Both are public by default.
-- Every donation belongs to a campaign. A default `General Support` campaign without a target is always available.
+- Every donation belongs to a campaign. A default `Sawer aku` campaign without a target is always available.
 - Campaign targets are optional.
 - Rankings include successful donations only and respect donor visibility choices.
 - Midtrans Snap is the first payment provider.

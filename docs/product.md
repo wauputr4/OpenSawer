@@ -13,7 +13,7 @@ The instance owner manages campaigns, donations, visibility, branding, and Midtr
 ## Donation flow
 
 1. Open the landing page or a direct campaign link.
-2. Select a campaign. The default is `General Support` with no target.
+2. Select a campaign. The default is `Sawer aku` with no target.
 3. Select a preset amount or choose `Nominal lain` to enter a custom amount.
 4. Add an optional message.
 5. Optionally open `Privasi tampilan` to change visibility. Identity and amount are public by default.
@@ -49,7 +49,7 @@ A campaign has:
 - Optional target amount.
 - Active or archived state.
 
-The instance starts with one non-deletable default campaign named `General Support`, type `general`, with no target. A target adds progress display; it does not change payment behavior.
+The instance starts with one non-deletable default campaign named `Sawer aku`, type `general`, with no target. A target adds progress display; it does not change payment behavior.
 
 ## Ranking
 
@@ -66,7 +66,7 @@ The public experience is rendered with SvelteKit and Svelte 5. Use shadcn-svelte
 
 ### Landing `/`
 
-Profile image, recipient identity, short pitch, up to six customizable social or short links, primary `Kirim Sawer` button, active campaigns, top-five ranking, and a small footer. Keep the opening screen calm and immediately understandable; avoid feature grids, pricing sections, and decorative dashboard imagery.
+Profile image, editable creator name, headline and description, up to six customizable social or short links, primary `Kirim Sawer` button, active campaigns, top-five ranking, and a small footer. Keep the opening screen calm and immediately understandable; avoid feature grids, pricing sections, and decorative dashboard imagery.
 
 ### Donation `/sawer`
 
@@ -82,4 +82,4 @@ One owner login. No registration or password recovery in the first release.
 
 ### Admin dashboard `/admin`
 
-One responsive screen with Summary, Donations, Campaigns, and Settings sections. Prefer native SvelteKit forms and clear tables over client-side dashboard machinery. No charts are required.
+One responsive screen with Overview, History, Campaign, and Setting menus. Campaign creation and editing use a native modal dialog. The menu stays at the top on desktop and becomes bottom navigation on mobile. Prefer native SvelteKit forms and clear tables over client-side dashboard machinery. No charts are required.

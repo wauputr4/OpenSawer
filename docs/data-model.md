@@ -9,7 +9,9 @@ One row stores the presentation defaults editable from the admin dashboard.
 | Column                   | Notes                                 |
 | ------------------------ | ------------------------------------- |
 | `id`                     | Fixed primary key value `1`           |
-| `site_name`, `headline`  | Public identity and short copy        |
+| `site_name`              | Instance name used in metadata        |
+| `creator_name`           | Public creator name                   |
+| `headline`, `intro_text` | Editable public profile copy          |
 | `profile_image_url`      | Optional public profile image URL     |
 | `social_links`           | JSON array of up to six public links  |
 | `minimum_amount`         | Positive integer rupiah amount        |
