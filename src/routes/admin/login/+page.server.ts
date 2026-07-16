@@ -1,14 +1,22 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { setAdminCookie, verifyAdmin } from '$lib/server/auth';
+import { turnstileSiteKey, verifyTurnstile } from '$lib/server/turnstile';
 
 export const load: PageServerLoad = ({ locals }) => {
 	if (locals.admin) throw redirect(303, '/admin');
+	return { turnstileSiteKey: turnstileSiteKey() };
 };
 
 export const actions: Actions = {
-	default: async ({ request, cookies }) => {
+	default: async ({ request, cookies, getClientAddress }) => {
 		const data = await request.formData();
+		if (
+			!(await verifyTurnstile(String(data.get('cf-turnstile-response') || ''), getClientAddress()))
+		) {
+			await new Promise((resolve) => setTimeout(resolve, 1_000));
+			return fail(400, { error: 'Verifikasi keamanan gagal. Muat ulang lalu coba lagi.' });
+		}
 		if (
 			!(await verifyAdmin(String(data.get('username') || ''), String(data.get('password') || '')))
 		) {

@@ -1,8 +1,19 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { LockKeyhole } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
-	let { form } = $props();
+	let { data, form } = $props();
+
+	onMount(() => {
+		if (!data.turnstileSiteKey) return;
+		const script = document.createElement('script');
+		script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+		script.async = true;
+		script.defer = true;
+		document.head.appendChild(script);
+		return () => script.remove();
+	});
 </script>
 
 <svelte:head><title>Masuk admin — OpenSawer</title></svelte:head>
@@ -39,6 +50,13 @@
 					required
 				/>
 			</div>
+			{#if data.turnstileSiteKey}<div
+					class="cf-turnstile"
+					data-sitekey={data.turnstileSiteKey}
+					data-theme="light"
+				></div>{:else}<p role="alert" class="text-sm text-destructive">
+					Turnstile belum dikonfigurasi.
+				</p>{/if}
 			<Button type="submit" class="mt-2 w-full rounded-full" size="lg">Masuk</Button>
 		</form>
 	</div>

@@ -1,4 +1,5 @@
 import { timingSafeEqual } from 'node:crypto';
+import { secretEnv } from './env-config';
 
 type MidtransStatus = {
 	order_id: string;
@@ -11,12 +12,49 @@ type MidtransStatus = {
 	signature_key?: string;
 };
 
-const sandbox = () => (process.env.MIDTRANS_ENV || 'sandbox') !== 'production';
-const auth = () =>
-	`Basic ${Buffer.from(`${process.env.MIDTRANS_SERVER_KEY || ''}:`).toString('base64')}`;
+export type MidtransEnvironment = 'sandbox' | 'production';
+
+export function midtransConfig() {
+	const environment: MidtransEnvironment =
+		process.env.MIDTRANS_ENV === 'production' ? 'production' : 'sandbox';
+	return {
+		environment,
+		merchantId: process.env.MIDTRANS_MERCHANT_ID || '',
+		clientKey: secretEnv('MIDTRANS_CLIENT_KEY'),
+		serverKey: secretEnv('MIDTRANS_SERVER_KEY')
+	};
+}
+
+const sandbox = () => midtransConfig().environment === 'sandbox';
+const auth = (serverKey = midtransConfig().serverKey) =>
+	`Basic ${Buffer.from(`${serverKey}:`).toString('base64')}`;
 
 export const mockEnabled = () =>
 	process.env.NODE_ENV !== 'production' && process.env.MIDTRANS_MOCK === 'true';
+
+export async function testMidtransCredentials(input: {
+	environment: MidtransEnvironment;
+	clientKey: string;
+	serverKey: string;
+}): Promise<void> {
+	const prefix = input.environment === 'sandbox' ? 'SB-Mid-' : 'Mid-';
+	if (!input.clientKey.startsWith(`${prefix}client-`))
+		throw new Error(`Client key tidak cocok untuk mode ${input.environment}.`);
+	if (!input.serverKey.startsWith(`${prefix}server-`))
+		throw new Error(`Server key tidak cocok untuk mode ${input.environment}.`);
+	const base =
+		input.environment === 'sandbox'
+			? 'https://api.sandbox.midtrans.com'
+			: 'https://api.midtrans.com';
+	const response = await fetch(`${base}/v2/opensawer-auth-test/status`, {
+		headers: { Authorization: auth(input.serverKey), Accept: 'application/json' },
+		signal: AbortSignal.timeout(10_000)
+	});
+	if (response.status === 401 || response.status === 403)
+		throw new Error('Autentikasi Midtrans ditolak. Periksa kembali server key.');
+	if (!response.ok && response.status !== 404)
+		throw new Error(`Test koneksi Midtrans gagal (${response.status}).`);
+}
 
 export function mapStatus(
 	status: string,
@@ -36,15 +74,15 @@ export async function createSnap(input: {
 	email?: string;
 }): Promise<string> {
 	if (mockEnabled()) return `mock-${input.orderId}`;
-	if (!process.env.MIDTRANS_SERVER_KEY || !process.env.MIDTRANS_CLIENT_KEY)
-		throw new Error('Midtrans belum dikonfigurasi');
+	const config = midtransConfig();
+	if (!config.serverKey || !config.clientKey) throw new Error('Midtrans belum dikonfigurasi');
 	const url = sandbox()
 		? 'https://app.sandbox.midtrans.com/snap/v1/transactions'
 		: 'https://app.midtrans.com/snap/v1/transactions';
 	const response = await fetch(url, {
 		method: 'POST',
 		headers: {
-			Authorization: auth(),
+			Authorization: auth(config.serverKey),
 			'Content-Type': 'application/json',
 			Accept: 'application/json'
 		},
@@ -60,9 +98,10 @@ export async function createSnap(input: {
 }
 
 export async function fetchStatus(orderId: string): Promise<MidtransStatus> {
+	const config = midtransConfig();
 	const base = sandbox() ? 'https://api.sandbox.midtrans.com' : 'https://api.midtrans.com';
 	const response = await fetch(`${base}/v2/${encodeURIComponent(orderId)}/status`, {
-		headers: { Authorization: auth(), Accept: 'application/json' },
+		headers: { Authorization: auth(config.serverKey), Accept: 'application/json' },
 		signal: AbortSignal.timeout(10_000)
 	});
 	if (!response.ok) throw new Error(`Verifikasi Midtrans gagal (${response.status})`);
@@ -70,11 +109,10 @@ export async function fetchStatus(orderId: string): Promise<MidtransStatus> {
 }
 
 export function validSignature(body: MidtransStatus): boolean {
-	if (!body.signature_key || !process.env.MIDTRANS_SERVER_KEY) return false;
+	const serverKey = midtransConfig().serverKey;
+	if (!body.signature_key || !serverKey) return false;
 	const expected = new Bun.CryptoHasher('sha512')
-		.update(
-			`${body.order_id}${body.status_code}${body.gross_amount}${process.env.MIDTRANS_SERVER_KEY}`
-		)
+		.update(`${body.order_id}${body.status_code}${body.gross_amount}${serverKey}`)
 		.digest('hex');
 	const supplied = body.signature_key.toLowerCase();
 	return (

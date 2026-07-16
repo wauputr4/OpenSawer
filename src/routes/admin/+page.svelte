@@ -2,6 +2,7 @@
 	import {
 		CircleDollarSign,
 		Clock3,
+		CreditCard,
 		ExternalLink,
 		History,
 		LayoutDashboard,
@@ -371,6 +372,68 @@
 					/> Aktifkan ranking</label
 				>
 				<div class="sm:text-right"><Button type="submit">Simpan pengaturan</Button></div>
+			</form>
+
+			<div class="my-8 border-t"></div>
+			<h3 class="flex items-center gap-2 font-heading text-2xl font-semibold">
+				<CreditCard class="size-5" /> Pembayaran
+			</h3>
+			<p class="mt-1 text-sm text-muted-foreground">
+				Kredensial diuji sebelum disimpan terenkripsi. Kosongkan field key untuk mempertahankan key
+				lama.
+			</p>
+			<form method="POST" action="?/payment" class="mt-5 grid gap-4 sm:grid-cols-2">
+				<div>
+					<label for="midtrans_environment" class="mb-1 block text-xs font-bold">Mode</label>
+					<select
+						id="midtrans_environment"
+						name="midtrans_environment"
+						value={data.payment.environment}
+						class="h-10 w-full rounded-lg border bg-background px-3 text-sm"
+					>
+						<option value="sandbox">Sandbox</option>
+						<option value="production">Production</option>
+					</select>
+				</div>
+				<div>
+					<label for="midtrans_merchant_id" class="mb-1 block text-xs font-bold">Merchant ID</label>
+					<Input
+						id="midtrans_merchant_id"
+						name="midtrans_merchant_id"
+						value={data.payment.merchantId}
+						autocomplete="off"
+						required
+					/>
+				</div>
+				<div>
+					<label for="midtrans_client_key" class="mb-1 block text-xs font-bold">Client key</label>
+					<Input
+						id="midtrans_client_key"
+						name="midtrans_client_key"
+						type="password"
+						autocomplete="new-password"
+						placeholder={data.payment.hasClientKey
+							? 'Tersimpan — kosongkan bila tidak berubah'
+							: ''}
+						required={!data.payment.hasClientKey}
+					/>
+				</div>
+				<div>
+					<label for="midtrans_server_key" class="mb-1 block text-xs font-bold">Server key</label>
+					<Input
+						id="midtrans_server_key"
+						name="midtrans_server_key"
+						type="password"
+						autocomplete="new-password"
+						placeholder={data.payment.hasServerKey
+							? 'Tersimpan — kosongkan bila tidak berubah'
+							: ''}
+						required={!data.payment.hasServerKey}
+					/>
+				</div>
+				<div class="sm:col-span-2 sm:text-right">
+					<Button type="submit">Test koneksi & simpan</Button>
+				</div>
 			</form>
 		</section>
 	{/if}

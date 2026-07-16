@@ -1,7 +1,7 @@
 import { error, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { getDb } from '$lib/server/db';
-import { fetchStatus, mapStatus, mockEnabled } from '$lib/server/midtrans';
+import { fetchStatus, mapStatus, midtransConfig, mockEnabled } from '$lib/server/midtrans';
 
 type Donation = {
 	public_id: string;
@@ -15,13 +15,14 @@ type Donation = {
 
 export const load: PageServerLoad = async ({ params }) => {
 	const db = getDb();
+	const paymentConfig = midtransConfig();
 	let donation = db
 		.query<Donation, [string]>(
 			`SELECT d.public_id, d.order_id, d.amount, d.status, d.snap_token, c.name campaign_name, d.created_at FROM donations d JOIN campaigns c ON c.id = d.campaign_id WHERE d.public_id = ?`
 		)
 		.get(params.id);
 	if (!donation) throw error(404, 'Donasi tidak ditemukan');
-	if (donation.status === 'pending' && !mockEnabled() && process.env.MIDTRANS_SERVER_KEY) {
+	if (donation.status === 'pending' && !mockEnabled() && paymentConfig.serverKey) {
 		try {
 			const status = await fetchStatus(donation.order_id);
 			const mapped = mapStatus(status.transaction_status, status.fraud_status);
@@ -42,9 +43,9 @@ export const load: PageServerLoad = async ({ params }) => {
 	return {
 		donation,
 		mock: mockEnabled(),
-		clientKey: process.env.MIDTRANS_CLIENT_KEY || '',
+		clientKey: paymentConfig.clientKey,
 		snapUrl:
-			(process.env.MIDTRANS_ENV || 'sandbox') === 'production'
+			paymentConfig.environment === 'production'
 				? 'https://app.midtrans.com/snap/snap.js'
 				: 'https://app.sandbox.midtrans.com/snap/snap.js'
 	};

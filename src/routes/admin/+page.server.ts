@@ -2,6 +2,12 @@ import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { clearAdminCookie } from '$lib/server/auth';
 import { getDb, parseSocialLinks, settings, slugify } from '$lib/server/db';
+import { encryptSecret, updateEnvFile } from '$lib/server/env-config';
+import {
+	midtransConfig,
+	testMidtransCredentials,
+	type MidtransEnvironment
+} from '$lib/server/midtrans';
 
 type AdminCampaign = {
 	id: number;
@@ -53,8 +59,15 @@ function campaignValues(form: FormData) {
 export const load: PageServerLoad = ({ locals }) => {
 	guard(locals.admin);
 	const db = getDb();
+	const payment = midtransConfig();
 	return {
 		settings: settings(),
+		payment: {
+			environment: payment.environment,
+			merchantId: payment.merchantId,
+			hasClientKey: Boolean(payment.clientKey),
+			hasServerKey: Boolean(payment.serverKey)
+		},
 		summary: db
 			.query<{ total: number; paid: number; pending: number }, []>(
 				"SELECT COALESCE(SUM(CASE WHEN status='paid' THEN amount END),0) total, SUM(status='paid') paid, SUM(status='pending') pending FROM donations"
@@ -140,6 +153,46 @@ export const actions: Actions = {
 				form.get('ranking_enabled') === 'on' ? 1 : 0
 			);
 		return { success: 'Pengaturan disimpan.', view: 'settings' };
+	},
+	payment: async ({ request, locals }) => {
+		guard(locals.admin);
+		const form = await request.formData();
+		const environment = value(form, 'midtrans_environment') as MidtransEnvironment;
+		const merchantId = value(form, 'midtrans_merchant_id');
+		const masterKey = process.env.OPENSAWER_SESSION_SECRET;
+		const current = midtransConfig();
+		const clientKey = value(form, 'midtrans_client_key') || current.clientKey;
+		const serverKey = value(form, 'midtrans_server_key') || current.serverKey;
+		if (!masterKey)
+			return fail(400, {
+				error: 'OPENSAWER_SESSION_SECRET wajib diatur sebelum menyimpan key.',
+				view: 'settings'
+			});
+		if (!['sandbox', 'production'].includes(environment) || !merchantId || !clientKey || !serverKey)
+			return fail(400, {
+				error: 'Mode, merchant ID, client key, dan server key wajib lengkap.',
+				view: 'settings'
+			});
+		try {
+			await testMidtransCredentials({ environment, clientKey, serverKey });
+			updateEnvFile({
+				OPENSAWER_SESSION_SECRET: masterKey,
+				MIDTRANS_ENV: environment,
+				MIDTRANS_MERCHANT_ID: merchantId,
+				MIDTRANS_CLIENT_KEY: encryptSecret(clientKey),
+				MIDTRANS_SERVER_KEY: encryptSecret(serverKey),
+				MIDTRANS_MOCK: 'false'
+			});
+		} catch (error) {
+			return fail(400, {
+				error: error instanceof Error ? error.message : 'Konfigurasi pembayaran gagal disimpan.',
+				view: 'settings'
+			});
+		}
+		return {
+			success: 'Koneksi Midtrans berhasil dan konfigurasi terenkripsi disimpan.',
+			view: 'settings'
+		};
 	},
 	campaign: async ({ request, locals }) => {
 		guard(locals.admin);

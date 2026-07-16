@@ -64,9 +64,10 @@ Open `http://localhost:5173`. The example environment enables `MIDTRANS_MOCK=tru
 Before a production run:
 
 1. Set a long `OPENSAWER_SESSION_SECRET` and a Bun password hash in `OPENSAWER_ADMIN_PASSWORD_HASH`.
-2. Set `MIDTRANS_MOCK=false`, add Midtrans keys, and configure the HTTPS notification URL as `/webhooks/midtrans`.
-3. Configure SMTP for named donors and set the public `ORIGIN`.
-4. Mount `data/` persistently and keep one application writer.
+2. Configure real Cloudflare Turnstile site and secret keys.
+3. Save and test Midtrans keys from the admin Setting menu, then configure the HTTPS notification URL as `/webhooks/midtrans`.
+4. Configure SMTP for named donors and set the public `ORIGIN`.
+5. Mount `data/` and `.env` persistently, then keep one application writer.
 
 Quality checks:
 

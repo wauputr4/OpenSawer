@@ -13,7 +13,11 @@ OPENSAWER_SESSION_SECRET=replace-with-a-long-random-value
 OPENSAWER_ADMIN_USERNAME=admin
 OPENSAWER_ADMIN_PASSWORD_HASH=
 
+TURNSTILE_SITE_KEY=
+TURNSTILE_SECRET_KEY=
+
 MIDTRANS_ENV=sandbox
+MIDTRANS_MERCHANT_ID=
 MIDTRANS_SERVER_KEY=
 MIDTRANS_MOCK=false
 MIDTRANS_CLIENT_KEY=
@@ -26,6 +30,8 @@ SMTP_FROM=no-reply@example.com
 ```
 
 `ORIGIN` is required by the self-hosted SvelteKit server for correct public URLs and form-origin checks. Never commit `.env`, database files, uploads, Midtrans keys, SMTP credentials, or session secrets.
+
+Admin login validates Cloudflare Turnstile server-side. Local development uses Cloudflare's always-pass test keys when both Turnstile variables are empty. Production fails closed until real `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` values are configured.
 
 `MIDTRANS_MOCK=true` is only for local UI development. It adds a server-side payment simulation action and must never be enabled on a public deployment. Without SMTP, local development returns the OTP in the page response; production rejects OTP delivery until SMTP is configured.
 
@@ -52,6 +58,9 @@ bun -e "console.log(await Bun.password.hash('replace-this-password'))"
 ## Midtrans
 
 - Use Snap for the first release.
+- Sandbox is the default mode; production must be selected explicitly.
+- The admin dashboard tests credentials before saving. Client and server keys are encrypted with AES-256-GCM before `.env` is atomically replaced.
+- `OPENSAWER_SESSION_SECRET` is the encryption master key. Keep it stable; changing it requires entering the Midtrans keys again.
 - Configure a public HTTPS notification endpoint.
 - Verify every notification with Midtrans before changing financial state.
 - Keep sandbox and production keys separate.
@@ -59,4 +68,4 @@ bun -e "console.log(await Bun.password.hash('replace-this-password'))"
 
 ## Self-hosting
 
-The supported first deployment is one SvelteKit process running on Bun behind an HTTPS reverse proxy. Mount the persistent `data/` directory. Build with `bun --bun run build`, run with `bun ./build/index.js`, and keep a single writer for SQLite.
+The supported first deployment is one SvelteKit process running on Bun behind an HTTPS reverse proxy. Mount the persistent `data/` directory and the writable `.env` file. Build with `bun --bun run build`, run with `bun ./build/index.js`, and keep a single writer for SQLite.
