@@ -10,7 +10,8 @@ One row stores the presentation defaults editable from the admin dashboard.
 | ------------------------ | ------------------------------------- |
 | `id`                     | Fixed primary key value `1`           |
 | `site_name`, `headline`  | Public identity and short copy        |
-| `avatar_path`            | Optional local upload                 |
+| `profile_image_url`      | Optional public profile image URL     |
+| `social_links`           | JSON array of up to six public links  |
 | `minimum_amount`         | Positive integer rupiah amount        |
 | `preset_amounts`         | JSON array of positive rupiah amounts |
 | `default_show_supporter` | Defaults to true                      |
@@ -29,7 +30,6 @@ Every donation belongs to a campaign. The initial setup creates one default camp
 | `name`                     | Public campaign name                                |
 | `kind`                     | `general`, `creator`, `social`, `event`, or `other` |
 | `description`              | Short public copy                                   |
-| `image_path`               | Optional local upload                               |
 | `target_amount`            | Nullable positive integer rupiah amount             |
 | `is_default`               | Exactly one default campaign                        |
 | `is_active`                | Controls new donations                              |

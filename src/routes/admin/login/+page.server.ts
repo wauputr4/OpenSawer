@@ -11,8 +11,10 @@ export const actions: Actions = {
 		const data = await request.formData();
 		if (
 			!(await verifyAdmin(String(data.get('username') || ''), String(data.get('password') || '')))
-		)
+		) {
+			await new Promise((resolve) => setTimeout(resolve, 1_000));
 			return fail(400, { error: 'Username atau password salah.' });
+		}
 		await setAdminCookie(cookies);
 		throw redirect(303, '/admin');
 	}

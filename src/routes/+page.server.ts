@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { activeCampaigns, getDb, ranking, settings } from '$lib/server/db';
+import { activeCampaigns, getDb, ranking, settings, storedSocialLinks } from '$lib/server/db';
 
 export const load: PageServerLoad = () => {
 	const db = getDb();
@@ -17,5 +17,12 @@ export const load: PageServerLoad = () => {
 			"SELECT COALESCE(SUM(amount), 0) total, COUNT(*) supporters FROM donations WHERE status = 'paid'"
 		)
 		.get()!;
-	return { settings: settings(), campaigns, ranking: ranking(5), summary };
+	const siteSettings = settings();
+	return {
+		settings: siteSettings,
+		socialLinks: storedSocialLinks(siteSettings.social_links),
+		campaigns,
+		ranking: ranking(5),
+		summary
+	};
 };

@@ -48,7 +48,7 @@
 			<p class="mt-5 text-sm font-bold text-amber-700">MENUNGGU PEMBAYARAN</p>
 			<h1 class="mt-2 font-heading text-4xl font-semibold">Sedikit lagi.</h1>
 			<p class="mt-3 text-muted-foreground">
-				Selesaikan pembayaran, lalu halaman ini akan membaca status terverifikasi dari Midtrans.
+				Selesaikan pembayaran, lalu halaman ini akan memperbarui statusnya secara otomatis.
 			</p>
 		{:else}<XCircle class="mx-auto size-14 text-destructive" />
 			<p class="mt-5 text-sm font-bold text-destructive">
@@ -81,7 +81,7 @@
 					type="button"
 					onclick={pay}
 					class="w-full rounded-full"
-					size="lg">Buka pembayaran Midtrans</Button
+					size="lg">Buka pembayaran</Button
 				>{/if}
 			{#if data.donation.status === 'pending'}<Button
 					href={`/sawer/${data.donation.public_id}`}

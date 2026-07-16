@@ -161,12 +161,13 @@ export const actions: Actions = {
 				"UPDATE donations SET snap_token = ?, status = 'pending', updated_at = CURRENT_TIMESTAMP WHERE public_id = ?"
 			).run(token, publicId);
 		} catch (error) {
+			console.error('Gagal membuat pembayaran', error);
 			db.query(
 				"UPDATE donations SET status = 'failed', updated_at = CURRENT_TIMESTAMP WHERE public_id = ?"
 			).run(publicId);
 			return fail(502, {
 				action: 'donate',
-				error: error instanceof Error ? error.message : 'Pembayaran gagal dibuat.'
+				error: 'Layanan pembayaran belum tersedia. Coba lagi nanti.'
 			});
 		}
 		throw redirect(303, `/sawer/${publicId}`);

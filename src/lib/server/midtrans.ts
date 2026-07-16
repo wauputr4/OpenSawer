@@ -15,6 +15,9 @@ const sandbox = () => (process.env.MIDTRANS_ENV || 'sandbox') !== 'production';
 const auth = () =>
 	`Basic ${Buffer.from(`${process.env.MIDTRANS_SERVER_KEY || ''}:`).toString('base64')}`;
 
+export const mockEnabled = () =>
+	process.env.NODE_ENV !== 'production' && process.env.MIDTRANS_MOCK === 'true';
+
 export function mapStatus(
 	status: string,
 	fraud?: string
@@ -32,7 +35,7 @@ export async function createSnap(input: {
 	name: string;
 	email?: string;
 }): Promise<string> {
-	if (process.env.MIDTRANS_MOCK === 'true') return `mock-${input.orderId}`;
+	if (mockEnabled()) return `mock-${input.orderId}`;
 	if (!process.env.MIDTRANS_SERVER_KEY || !process.env.MIDTRANS_CLIENT_KEY)
 		throw new Error('Midtrans belum dikonfigurasi');
 	const url = sandbox()
@@ -48,7 +51,8 @@ export async function createSnap(input: {
 		body: JSON.stringify({
 			transaction_details: { order_id: input.orderId, gross_amount: input.amount },
 			customer_details: { first_name: input.name, email: input.email }
-		})
+		}),
+		signal: AbortSignal.timeout(10_000)
 	});
 	if (!response.ok) throw new Error(`Midtrans Snap gagal (${response.status})`);
 	const body = (await response.json()) as { token: string };
@@ -58,7 +62,8 @@ export async function createSnap(input: {
 export async function fetchStatus(orderId: string): Promise<MidtransStatus> {
 	const base = sandbox() ? 'https://api.sandbox.midtrans.com' : 'https://api.midtrans.com';
 	const response = await fetch(`${base}/v2/${encodeURIComponent(orderId)}/status`, {
-		headers: { Authorization: auth(), Accept: 'application/json' }
+		headers: { Authorization: auth(), Accept: 'application/json' },
+		signal: AbortSignal.timeout(10_000)
 	});
 	if (!response.ok) throw new Error(`Verifikasi Midtrans gagal (${response.status})`);
 	return response.json() as Promise<MidtransStatus>;

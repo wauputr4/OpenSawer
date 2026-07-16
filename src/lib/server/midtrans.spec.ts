@@ -1,7 +1,13 @@
 import { afterEach, describe, expect, test } from 'vitest';
-import { mapStatus, validSignature, type MidtransStatus } from './midtrans';
+import { mapStatus, mockEnabled, validSignature, type MidtransStatus } from './midtrans';
 
-afterEach(() => delete process.env.MIDTRANS_SERVER_KEY);
+const originalNodeEnv = process.env.NODE_ENV;
+
+afterEach(() => {
+	delete process.env.MIDTRANS_SERVER_KEY;
+	delete process.env.MIDTRANS_MOCK;
+	process.env.NODE_ENV = originalNodeEnv;
+});
 
 describe('Midtrans state', () => {
 	test('maps terminal and pending states', () => {
@@ -10,6 +16,14 @@ describe('Midtrans state', () => {
 		expect(mapStatus('expire')).toBe('expired');
 		expect(mapStatus('deny')).toBe('failed');
 		expect(mapStatus('pending')).toBe('pending');
+	});
+
+	test('never enables mock payments in production', () => {
+		process.env.MIDTRANS_MOCK = 'true';
+		process.env.NODE_ENV = 'development';
+		expect(mockEnabled()).toBe(true);
+		process.env.NODE_ENV = 'production';
+		expect(mockEnabled()).toBe(false);
 	});
 
 	test('checks the documented SHA-512 signature composition', () => {

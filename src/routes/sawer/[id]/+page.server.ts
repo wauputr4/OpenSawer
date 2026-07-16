@@ -1,7 +1,7 @@
 import { error, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { getDb } from '$lib/server/db';
-import { fetchStatus, mapStatus } from '$lib/server/midtrans';
+import { fetchStatus, mapStatus, mockEnabled } from '$lib/server/midtrans';
 
 type Donation = {
 	public_id: string;
@@ -21,11 +21,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		)
 		.get(params.id);
 	if (!donation) throw error(404, 'Donasi tidak ditemukan');
-	if (
-		donation.status === 'pending' &&
-		process.env.MIDTRANS_MOCK !== 'true' &&
-		process.env.MIDTRANS_SERVER_KEY
-	) {
+	if (donation.status === 'pending' && !mockEnabled() && process.env.MIDTRANS_SERVER_KEY) {
 		try {
 			const status = await fetchStatus(donation.order_id);
 			const mapped = mapStatus(status.transaction_status, status.fraud_status);
@@ -45,7 +41,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	}
 	return {
 		donation,
-		mock: process.env.MIDTRANS_MOCK === 'true',
+		mock: mockEnabled(),
 		clientKey: process.env.MIDTRANS_CLIENT_KEY || '',
 		snapUrl:
 			(process.env.MIDTRANS_ENV || 'sandbox') === 'production'
@@ -56,7 +52,7 @@ export const load: PageServerLoad = async ({ params }) => {
 
 export const actions: Actions = {
 	mockPaid: async ({ params }) => {
-		if (process.env.MIDTRANS_MOCK !== 'true') return fail(404);
+		if (!mockEnabled()) return fail(404);
 		getDb()
 			.query(
 				"UPDATE donations SET status = 'paid', paid_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE public_id = ?"

@@ -4,7 +4,10 @@ import { timingSafeEqual } from 'node:crypto';
 const cookieName = 'opensawer_admin';
 
 function secret(): string {
-	return process.env.OPENSAWER_SESSION_SECRET || 'development-only-change-this-secret';
+	if (process.env.OPENSAWER_SESSION_SECRET) return process.env.OPENSAWER_SESSION_SECRET;
+	if (process.env.NODE_ENV === 'production')
+		throw new Error('OPENSAWER_SESSION_SECRET wajib diatur di production');
+	return 'development-only-change-this-secret';
 }
 
 async function signature(value: string): Promise<string> {

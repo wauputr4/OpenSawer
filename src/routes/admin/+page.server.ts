@@ -1,7 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { clearAdminCookie } from '$lib/server/auth';
-import { getDb, settings, slugify } from '$lib/server/db';
+import { getDb, parseSocialLinks, settings, slugify } from '$lib/server/db';
 
 type AdminCampaign = {
 	id: number;
@@ -61,21 +61,38 @@ export const actions: Actions = {
 			.split(',')
 			.map((item) => Number(item.trim()))
 			.filter((item) => Number.isSafeInteger(item) && item > 0);
+		let socialLinks;
+		try {
+			socialLinks = parseSocialLinks(value(form, 'social_links'));
+		} catch {
+			return fail(400, { error: 'Gunakan format tautan: Label | https://alamat.tld' });
+		}
+		const profileImageUrl = value(form, 'profile_image_url');
+		if (profileImageUrl) {
+			try {
+				if (!['http:', 'https:'].includes(new URL(profileImageUrl).protocol)) throw new Error();
+			} catch {
+				return fail(400, { error: 'URL foto profil harus berupa alamat http atau https.' });
+			}
+		}
 		if (
 			!value(form, 'site_name') ||
 			!value(form, 'headline') ||
 			!Number.isSafeInteger(minimum) ||
 			minimum < 1000 ||
-			presets.length < 2
+			presets.length < 2 ||
+			presets.some((preset) => preset < minimum)
 		)
 			return fail(400, { error: 'Periksa nama, headline, nominal minimum, dan preset.' });
 		getDb()
 			.query(
-				`UPDATE site_settings SET site_name=?, headline=?, minimum_amount=?, preset_amounts=?, default_show_supporter=?, default_show_amount=?, ranking_enabled=?, updated_at=CURRENT_TIMESTAMP WHERE id=1`
+				`UPDATE site_settings SET site_name=?, headline=?, profile_image_url=?, social_links=?, minimum_amount=?, preset_amounts=?, default_show_supporter=?, default_show_amount=?, ranking_enabled=?, updated_at=CURRENT_TIMESTAMP WHERE id=1`
 			)
 			.run(
 				value(form, 'site_name').slice(0, 80),
 				value(form, 'headline').slice(0, 180),
+				profileImageUrl,
+				JSON.stringify(socialLinks),
 				minimum,
 				JSON.stringify(presets),
 				form.get('default_show_supporter') === 'on' ? 1 : 0,
@@ -89,8 +106,11 @@ export const actions: Actions = {
 		const form = await request.formData();
 		const name = value(form, 'name');
 		const slug = slugify(value(form, 'slug') || name);
-		const target = Number(value(form, 'target_amount')) || null;
+		const targetInput = value(form, 'target_amount');
+		const target = targetInput ? Number(targetInput) : null;
 		if (!name || !slug) return fail(400, { error: 'Nama campaign wajib diisi.' });
+		if (target !== null && (!Number.isSafeInteger(target) || target <= 0))
+			return fail(400, { error: 'Target campaign harus berupa bilangan bulat positif.' });
 		try {
 			getDb()
 				.query(

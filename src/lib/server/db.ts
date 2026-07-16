@@ -16,6 +16,8 @@ export type Campaign = {
 export type SiteSettings = {
 	site_name: string;
 	headline: string;
+	profile_image_url: string;
+	social_links: string;
 	minimum_amount: number;
 	preset_amounts: string;
 	default_show_supporter: number;
@@ -28,8 +30,9 @@ CREATE TABLE IF NOT EXISTS site_settings (
  id INTEGER PRIMARY KEY CHECK (id = 1), site_name TEXT NOT NULL, headline TEXT NOT NULL,
  minimum_amount INTEGER NOT NULL CHECK (minimum_amount > 0), preset_amounts TEXT NOT NULL,
  default_show_supporter INTEGER NOT NULL DEFAULT 1 CHECK (default_show_supporter IN (0,1)),
- default_show_amount INTEGER NOT NULL DEFAULT 1 CHECK (default_show_amount IN (0,1)),
- ranking_enabled INTEGER NOT NULL DEFAULT 1 CHECK (ranking_enabled IN (0,1)),
+	default_show_amount INTEGER NOT NULL DEFAULT 1 CHECK (default_show_amount IN (0,1)),
+	ranking_enabled INTEGER NOT NULL DEFAULT 1 CHECK (ranking_enabled IN (0,1)),
+	profile_image_url TEXT NOT NULL DEFAULT '', social_links TEXT NOT NULL DEFAULT '[]',
  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS campaigns (
@@ -73,6 +76,18 @@ export function getDb(path = process.env.OPENSAWER_DB_PATH || './data/opensawer.
 	database = new Database(path, { create: true, strict: true });
 	database.exec('PRAGMA journal_mode = WAL; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;');
 	database.exec(schema);
+	const settingColumns = new Set(
+		database
+			.query<{ name: string }, []>('PRAGMA table_info(site_settings)')
+			.all()
+			.map((column) => column.name)
+	);
+	if (!settingColumns.has('profile_image_url'))
+		database.exec(
+			"ALTER TABLE site_settings ADD COLUMN profile_image_url TEXT NOT NULL DEFAULT ''"
+		);
+	if (!settingColumns.has('social_links'))
+		database.exec("ALTER TABLE site_settings ADD COLUMN social_links TEXT NOT NULL DEFAULT '[]'");
 	database.run(`INSERT OR IGNORE INTO site_settings
 		(id, site_name, headline, minimum_amount, preset_amounts)
 		VALUES (1, 'OpenSawer', 'Dukungan kecil, langkah yang berarti.', 10000, '[10000,25000,50000,100000]')`);
@@ -122,4 +137,40 @@ export function slugify(value: string): string {
 		.replace(/[^a-z0-9]+/g, '-')
 		.replace(/(^-|-$)/g, '')
 		.slice(0, 60);
+}
+
+export type SocialLink = { label: string; url: string };
+
+export function parseSocialLinks(value: string): SocialLink[] {
+	return value
+		.split('\n')
+		.map((line) => line.trim())
+		.filter(Boolean)
+		.slice(0, 6)
+		.map((line) => {
+			const separator = line.indexOf('|');
+			const label = line.slice(0, separator).trim();
+			const rawUrl = line.slice(separator + 1).trim();
+			if (separator < 1 || !label || label.length > 30)
+				throw new Error('Format tautan tidak valid');
+			const url = new URL(rawUrl);
+			if (!['http:', 'https:'].includes(url.protocol)) throw new Error('Format tautan tidak valid');
+			return { label, url: url.toString() };
+		});
+}
+
+export function storedSocialLinks(value: string): SocialLink[] {
+	try {
+		const links = JSON.parse(value) as unknown;
+		if (!Array.isArray(links)) return [];
+		return links.filter(
+			(link): link is SocialLink =>
+				typeof link === 'object' &&
+				link !== null &&
+				typeof (link as SocialLink).label === 'string' &&
+				typeof (link as SocialLink).url === 'string'
+		);
+	} catch {
+		return [];
+	}
 }

@@ -1,5 +1,13 @@
 import { afterEach, describe, expect, test } from 'vitest';
-import { activeCampaigns, getDb, ranking, resetDbForTests, settings, slugify } from './db';
+import {
+	activeCampaigns,
+	getDb,
+	parseSocialLinks,
+	ranking,
+	resetDbForTests,
+	settings,
+	slugify
+} from './db';
 
 afterEach(() => resetDbForTests());
 
@@ -8,6 +16,8 @@ describe('database defaults', () => {
 		getDb(':memory:');
 		expect(settings().default_show_supporter).toBe(1);
 		expect(settings().default_show_amount).toBe(1);
+		expect(settings().profile_image_url).toBe('');
+		expect(settings().social_links).toBe('[]');
 		expect(activeCampaigns()).toMatchObject([{ is_default: 1, target_amount: null }]);
 	});
 
@@ -29,5 +39,12 @@ describe('database defaults', () => {
 
 	test('normalizes campaign slugs', () => {
 		expect(slugify('Bantu Karya #1')).toBe('bantu-karya-1');
+	});
+
+	test('parses customizable public links', () => {
+		expect(parseSocialLinks('Instagram | https://instagram.com/opensawer')).toEqual([
+			{ label: 'Instagram', url: 'https://instagram.com/opensawer' }
+		]);
+		expect(() => parseSocialLinks('Script | javascript:alert(1)')).toThrow();
 	});
 });

@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { ArrowRight, EyeOff, Target, Trophy } from '@lucide/svelte';
+	import { ArrowRight, ExternalLink, EyeOff, Target, Trophy } from '@lucide/svelte';
 	import { rupiah } from '$lib/format';
 	import { Button } from '$lib/components/ui/button';
 	import { Progress } from '$lib/components/ui/progress';
 	import { resolve } from '$app/paths';
+	import LogoMark from '$lib/components/logo-mark.svelte';
 	let { data } = $props();
 </script>
 
@@ -12,18 +13,41 @@
 <section
 	class="mx-auto grid max-w-6xl gap-12 px-5 pt-10 pb-16 lg:grid-cols-[1.15fr_.85fr] lg:px-8 lg:pt-20 lg:pb-24"
 >
-	<div class="max-w-2xl">
-		<p class="mb-5 text-sm font-bold tracking-[.18em] text-primary uppercase">
-			Ruang dukungan terbuka
+	<div class="max-w-2xl text-center lg:text-left">
+		<div
+			class="mx-auto mb-5 grid size-24 place-items-center overflow-hidden rounded-full border bg-card shadow-sm lg:mx-0"
+		>
+			{#if data.settings.profile_image_url}<img
+					src={data.settings.profile_image_url}
+					alt={`Foto profil ${data.settings.site_name}`}
+					width="96"
+					height="96"
+					class="size-full object-cover"
+					referrerpolicy="no-referrer"
+				/>{:else}<LogoMark />{/if}
+		</div>
+		<p class="mb-3 text-sm font-bold tracking-[.18em] text-primary uppercase">
+			{data.settings.site_name}
 		</p>
 		<h1 class="font-heading text-5xl leading-[1.03] font-semibold text-balance sm:text-6xl">
 			{data.settings.headline}
 		</h1>
 		<p class="mt-6 max-w-xl text-lg leading-8 text-muted-foreground">
-			Tanpa akun, tanpa langkah yang berbelit. Pilih nominal, tulis pesan, lalu selesaikan
-			pembayaran dengan aman lewat Midtrans.
+			Kirim dukungan tanpa membuat akun. Pilih nominal, tulis pesan, lalu selesaikan pembayaran
+			dengan aman.
 		</p>
-		<div class="mt-8 flex flex-wrap items-center gap-4">
+		{#if data.socialLinks.length}<div
+				class="mt-6 flex flex-wrap justify-center gap-2 lg:justify-start"
+			>
+				{#each data.socialLinks as link (link.url)}<a
+						href={link.url}
+						target="_blank"
+						rel="noreferrer"
+						class="inline-flex items-center gap-2 rounded-full border bg-card px-4 py-2 text-sm font-semibold transition hover:border-primary/50 hover:text-primary"
+						>{link.label}<ExternalLink class="size-3.5" aria-hidden="true" /></a
+					>{/each}
+			</div>{/if}
+		<div class="mt-8 flex flex-wrap items-center justify-center gap-4 lg:justify-start">
 			<Button href="/sawer" size="lg" class="h-12 rounded-full px-7"
 				>Kirim sawer <ArrowRight class="size-4" /></Button
 			>
@@ -51,7 +75,7 @@
 			<div class="mt-8 flex items-center gap-3 text-sm text-muted-foreground">
 				<span class="grid size-8 place-items-center rounded-full bg-primary text-primary-foreground"
 					>♥</span
-				> Dibayar aman melalui Midtrans
+				> Pembayaran aman dan terverifikasi
 			</div>
 		</div>
 	</div>

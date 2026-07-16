@@ -12,6 +12,14 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
 	let { data, form } = $props();
+	const socialLinks = $derived(
+		JSON.parse(data.settings.social_links) as Array<{
+			label: string;
+			url: string;
+		}>
+	);
+	const socialLinksPlaceholder =
+		'Instagram | https://instagram.com/username\nWebsite | https://example.com';
 </script>
 
 <svelte:head><title>Dashboard — OpenSawer</title></svelte:head>
@@ -168,6 +176,29 @@
 					value={data.settings.headline}
 					required
 				/>
+			</div>
+			<div class="sm:col-span-2">
+				<label for="profile_image_url" class="mb-1 block text-xs font-bold"
+					>URL foto profil (opsional)</label
+				><Input
+					id="profile_image_url"
+					name="profile_image_url"
+					type="url"
+					placeholder="https://example.com/foto.jpg"
+					value={data.settings.profile_image_url}
+				/>
+			</div>
+			<div class="sm:col-span-2">
+				<label for="social_links" class="mb-1 block text-xs font-bold"
+					>Tautan profil, satu per baris</label
+				><Textarea
+					id="social_links"
+					name="social_links"
+					rows={4}
+					placeholder={socialLinksPlaceholder}
+					value={socialLinks.map((link) => `${link.label} | ${link.url}`).join('\n')}
+				/>
+				<p class="mt-1 text-xs text-muted-foreground">Maksimal 6 tautan. Format: Label | URL</p>
 			</div>
 			<div>
 				<label for="minimum" class="mb-1 block text-xs font-bold">Minimum</label><Input

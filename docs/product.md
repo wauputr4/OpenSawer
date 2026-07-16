@@ -14,9 +14,9 @@ The instance owner manages campaigns, donations, visibility, branding, and Midtr
 
 1. Open the landing page or a direct campaign link.
 2. Select a campaign. The default is `General Support` with no target.
-3. Select a preset amount or enter another valid amount.
+3. Select a preset amount or choose `Nominal lain` to enter a custom amount.
 4. Add an optional message.
-5. Choose visibility. Identity and amount are public by default.
+5. Optionally open `Privasi tampilan` to change visibility. Identity and amount are public by default.
 6. For a public identity, enter a unique username and email, then verify that email with a one-time code for the donation session.
 7. Continue to Midtrans Snap.
 8. Wait for the server to verify the Midtrans notification.
@@ -66,11 +66,11 @@ The public experience is rendered with SvelteKit and Svelte 5. Use shadcn-svelte
 
 ### Landing `/`
 
-Logo, recipient identity, short pitch, primary `Kirim Sawer` button, active campaigns, top-five ranking, and a small footer. Keep the opening screen calm and immediately understandable; avoid feature grids, pricing sections, and decorative dashboard imagery.
+Profile image, recipient identity, short pitch, up to six customizable social or short links, primary `Kirim Sawer` button, active campaigns, top-five ranking, and a small footer. Keep the opening screen calm and immediately understandable; avoid feature grids, pricing sections, and decorative dashboard imagery.
 
 ### Donation `/sawer`
 
-One mobile-first card containing campaign, amount, optional message, identity, visibility controls, payment total, and one payment CTA. The amount and CTA must dominate the hierarchy, while privacy choices remain explicit rather than hidden behind secondary dialogs.
+One mobile-first card containing campaign, amount, optional message, identity, collapsible visibility controls, payment total, and one payment CTA. The amount and CTA must dominate the hierarchy; privacy choices stay available in a native disclosure that is closed by default.
 
 ### Payment status `/sawer/{id}`
 
