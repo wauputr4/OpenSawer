@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, test, vi } from 'vitest';
+import { afterEach, describe, expect, test } from 'vitest';
 import {
 	mapStatus,
 	mockEnabled,
@@ -8,12 +8,13 @@ import {
 } from './midtrans';
 
 const originalNodeEnv = process.env.NODE_ENV;
+const originalFetch = globalThis.fetch;
 
 afterEach(() => {
 	delete process.env.MIDTRANS_SERVER_KEY;
 	delete process.env.MIDTRANS_MOCK;
 	process.env.NODE_ENV = originalNodeEnv;
-	vi.unstubAllGlobals();
+	globalThis.fetch = originalFetch;
 });
 
 describe('Midtrans state', () => {
@@ -34,10 +35,11 @@ describe('Midtrans state', () => {
 	});
 
 	test('tests sandbox key format and server authentication', async () => {
-		vi.stubGlobal(
-			'fetch',
-			vi.fn(async () => new Response('{}', { status: 404 }))
-		);
+		let requests = 0;
+		globalThis.fetch = (async () => {
+			requests += 1;
+			return new Response('{}', { status: 404 });
+		}) as unknown as typeof fetch;
 		await expect(
 			testMidtransCredentials({
 				environment: 'sandbox',
@@ -45,7 +47,7 @@ describe('Midtrans state', () => {
 				serverKey: 'SB-Mid-server-example'
 			})
 		).resolves.toBeUndefined();
-		expect(fetch).toHaveBeenCalledOnce();
+		expect(requests).toBe(1);
 		await expect(
 			testMidtransCredentials({
 				environment: 'sandbox',
