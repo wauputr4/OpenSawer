@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="static/opensawer-logo.png" alt="Logo OpenSawer" width="480">
+</p>
+
 # OpenSawer
 
 OpenSawer adalah aplikasi donasi sederhana yang bisa dijalankan di server sendiri. Satu instalasi ditujukan untuk satu kreator, komunitas, atau organisasi yang ingin menerima dukungan tanpa bergantung pada platform SaaS pihak ketiga.
