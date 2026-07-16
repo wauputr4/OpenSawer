@@ -1,6 +1,7 @@
 <script lang="ts">
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
+	import { resolve } from '$app/paths';
 
 	let { data, children } = $props();
 </script>
@@ -17,12 +18,21 @@
 <div class="min-h-screen">
 	<a href="#main-content" class="skip-link">Lewati ke konten utama</a>
 	<main id="main-content" tabindex="-1">{@render children()}</main>
-	<footer class="mx-auto flex max-w-6xl justify-center px-5 py-10 text-sm lg:px-8">
+	<footer
+		class="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-5 gap-y-3 px-5 py-10 text-sm lg:px-8"
+	>
+		<a href={resolve('/faq')} class="text-muted-foreground transition hover:text-foreground">FAQ</a>
+		<a href={resolve('/terms')} class="text-muted-foreground transition hover:text-foreground"
+			>Ketentuan</a
+		>
+		<a href={resolve('/privacy')} class="text-muted-foreground transition hover:text-foreground"
+			>Privasi</a
+		>
 		<a
 			href="https://github.com/wauputr4/OpenSawer"
 			target="_blank"
 			rel="noreferrer"
-			class="flex items-center gap-2 text-muted-foreground transition hover:text-foreground"
+			class="flex items-center gap-2 border-l pl-5 text-muted-foreground transition hover:text-foreground"
 			aria-label="Build by OpenSawer — buka repositori GitHub"
 			><svg class="size-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
 				><path
