@@ -1,78 +1,186 @@
 # OpenSawer
 
-OpenSawer is a small, self-hosted donation page for Indonesian creators and communities. It focuses on one job: accepting support through a modern public page without requiring donors to create accounts.
+OpenSawer adalah aplikasi donasi sederhana yang bisa dijalankan di server sendiri. Satu instalasi ditujukan untuk satu kreator, komunitas, atau organisasi yang ingin menerima dukungan tanpa bergantung pada platform SaaS pihak ketiga.
 
-> Status: early alpha. The complete donation loop is runnable locally; use sandbox credentials before any production deployment.
+Donatur tidak perlu membuat akun. Donasi bersifat anonim secara default; jika ingin memakai identitas publik, donatur dapat memverifikasi username unik melalui Google atau kode email. Pembayaran awal menggunakan Midtrans Snap dan seluruh data aplikasi disimpan di SQLite milik pengelola.
 
-## Product boundary
+> **Status:** early alpha. Gunakan Midtrans Sandbox dan uji seluruh alur sebelum menjalankan OpenSawer di production.
 
-- One self-hosted instance represents one creator or organization.
-- Donors do not have accounts or passwords.
-- Donations are anonymous by default. Named donors verify a unique username through Google or email.
-- Donors can independently hide their identity and donation amount.
-- Every donation belongs to a campaign. A default `Sawer aku` campaign without a target is always available.
-- Campaign targets are optional.
-- Rankings include successful donations only and respect donor visibility choices.
-- Midtrans Snap is the first payment provider.
-- SQLite is the only database for the initial release.
+## Fitur utama
 
-OpenSawer is not a marketplace, storefront, multi-tenant SaaS, page builder, or withdrawal service.
+- Halaman profil kreator dengan foto, headline, deskripsi, dan tautan sosial yang dapat diubah.
+- Form donasi tanpa akun dengan pilihan anonim, pesan, dan visibilitas nominal.
+- Campaign tanpa target atau dengan target donasi.
+- Ranking donatur yang menghormati pilihan privasi.
+- Verifikasi identitas melalui Google OAuth atau kode email.
+- Midtrans Sandbox dan Production, termasuk webhook dan verifikasi status server-side.
+- Dashboard admin untuk overview, riwayat, campaign, branding, dan konfigurasi pembayaran.
+- Kredensial Midtrans dienkripsi sebelum ditulis ke `.env`.
+- SQLite, Docker Compose, dan satu proses Bun—tanpa Redis atau database eksternal.
+- Halaman FAQ, ketentuan layanan, dan kebijakan privasi.
 
-## Pages
+OpenSawer bukan marketplace, toko online, layanan penarikan saldo, atau SaaS multi-tenant.
 
-| Page           | Purpose                                                           |
-| -------------- | ----------------------------------------------------------------- |
-| `/`            | Minimal landing page, active campaigns, CTA, and ranking          |
-| `/sawer`       | Campaign, amount, identity, visibility, message, and payment form |
-| `/sawer/{id}`  | Pending, successful, expired, or failed payment status            |
-| `/admin/login` | Single-owner admin login                                          |
-| `/admin`       | Summary, donations, campaigns, and settings in one dashboard      |
-| `/faq`         | Donation and payment questions                                    |
-| `/terms`       | Public service terms                                              |
-| `/privacy`     | Public privacy policy                                             |
+## Quick start lokal
 
-## Stack
+Persyaratan:
 
-- [Bun](https://bun.com/) as the JavaScript runtime and package manager
-- [SvelteKit](https://svelte.dev/docs/kit) with Svelte 5 for server-rendered pages, forms, and endpoints
-- [shadcn-svelte](https://www.shadcn-svelte.com/) for accessible, locally owned UI components
-- [Tailwind CSS 4](https://tailwindcss.com/) for styling
-- SQLite through Bun's built-in `bun:sqlite` driver
-- Midtrans Snap through server-side `fetch` and verified HTTP notifications
-- TypeScript throughout the application
-
-## Documentation
-
-- [Product and flows](docs/product.md)
-- [Architecture](docs/architecture.md)
-- [Data model](docs/data-model.md)
-- [Configuration](docs/configuration.md)
-- [Brand direction](docs/branding.md)
-- [Roadmap](docs/roadmap.md)
-- [Contributing](CONTRIBUTING.md)
-- [Security policy](SECURITY.md)
-
-## Local development
-
-Requires Bun 1.3.14 or newer.
+- [Bun](https://bun.com/) 1.3.14 atau lebih baru.
+- Git.
 
 ```bash
+git clone https://github.com/wauputr4/OpenSawer.git
+cd OpenSawer
 cp .env.example .env
 bun install --frozen-lockfile
 bun run dev
 ```
 
-Open `http://localhost:5173`. The example environment enables `MIDTRANS_MOCK=true`, exposes email verification codes only in local development, and uses the local admin password `change-me`. Never use those settings in production.
+Buka:
 
-Before a production run:
+- Situs publik: `http://localhost:5173`
+- Form donasi: `http://localhost:5173/sawer`
+- Login admin: `http://localhost:5173/admin/login`
 
-1. Set a long `OPENSAWER_SESSION_SECRET` and a Bun password hash in `OPENSAWER_ADMIN_PASSWORD_HASH`.
-2. Optionally configure Cloudflare Turnstile site and secret keys for admin login protection.
-3. Save and test Midtrans keys from the admin Setting menu, then configure the HTTPS notification URL as `/webhooks/midtrans`.
-4. Configure Google OAuth, SMTP, or both for named donors, then set the public `ORIGIN`.
-5. Mount `data/` and `.env` persistently, then keep one application writer.
+Kredensial development awal:
 
-Quality checks:
+```text
+Username: admin
+Password: change-me
+```
+
+`.env.example` mengaktifkan `MIDTRANS_MOCK=true`, sehingga UI dapat dicoba tanpa kredensial pembayaran. Kode verifikasi email juga ditampilkan langsung saat development jika SMTP belum diatur. Jangan gunakan kedua perilaku tersebut di production.
+
+## Setup pertama
+
+1. Login ke dashboard admin.
+2. Buka **Setting** untuk mengubah nama kreator, headline, foto, favicon, tautan sosial, nominal, dan ranking.
+3. Buka **Campaign** untuk membuat atau mengedit tujuan donasi.
+4. Di **Setting → Pembayaran**, pilih Sandbox lalu masukkan Merchant ID, Client Key, dan Server Key Midtrans.
+5. Klik **Test koneksi & simpan**. OpenSawer menguji key sebelum mengenkripsinya ke `.env`.
+6. Kirim donasi sandbox dari `/sawer` dan pastikan status berubah setelah pembayaran terverifikasi.
+
+Donasi anonim langsung tersedia tanpa Google maupun SMTP.
+
+## Konfigurasi penting
+
+Salin `.env.example`, lalu ubah nilai berikut sesuai lingkungan:
+
+| Variabel                        | Kegunaan                                         | Wajib production       |
+| ------------------------------- | ------------------------------------------------ | ---------------------- |
+| `ORIGIN`                        | URL publik, misalnya `https://sawer.example.com` | Ya                     |
+| `OPENSAWER_DB_PATH`             | Lokasi database SQLite                           | Ya                     |
+| `OPENSAWER_SESSION_SECRET`      | Penandatangan sesi dan kunci enkripsi kredensial | Ya                     |
+| `OPENSAWER_ADMIN_USERNAME`      | Username admin tunggal                           | Ya                     |
+| `OPENSAWER_ADMIN_PASSWORD_HASH` | Hash password admin dari Bun                     | Ya                     |
+| `MIDTRANS_ENV`                  | `sandbox` atau `production`                      | Ya                     |
+| `MIDTRANS_MERCHANT_ID`          | Merchant ID Midtrans                             | Untuk pembayaran nyata |
+| `MIDTRANS_CLIENT_KEY`           | Client Key Midtrans; dapat disimpan lewat admin  | Untuk pembayaran nyata |
+| `MIDTRANS_SERVER_KEY`           | Server Key Midtrans; dapat disimpan lewat admin  | Untuk pembayaran nyata |
+| `GOOGLE_CLIENT_ID`              | OAuth Client ID untuk identitas donatur          | Opsional               |
+| `GOOGLE_CLIENT_SECRET`          | OAuth Client Secret untuk identitas donatur      | Opsional               |
+| `SMTP_*`                        | Pengiriman kode verifikasi email                 | Opsional               |
+| `TURNSTILE_SITE_KEY`            | Widget keamanan login admin                      | Opsional               |
+| `TURNSTILE_SECRET_KEY`          | Validasi Turnstile server-side                   | Opsional               |
+
+Buat session secret dan hash password admin:
+
+```bash
+openssl rand -base64 48
+bun -e "console.log(await Bun.password.hash('ganti-dengan-password-kuat'))"
+```
+
+Masukkan hasil hash ke `OPENSAWER_ADMIN_PASSWORD_HASH`. Hapus atau kosongkan `OPENSAWER_ADMIN_PASSWORD` di production. Jangan mengganti `OPENSAWER_SESSION_SECRET` setelah kredensial Midtrans tersimpan; key tersebut diperlukan untuk mendekripsinya.
+
+Konfigurasi lengkap tersedia di [docs/configuration.md](docs/configuration.md).
+
+## Midtrans
+
+Mulai dari Sandbox:
+
+1. Ambil Merchant ID, Client Key, dan Server Key dari dashboard Midtrans Sandbox.
+2. Simpan dan uji key melalui dashboard OpenSawer.
+3. Atur notification URL Midtrans ke:
+
+   ```text
+   https://domain-anda.example/webhooks/midtrans
+   ```
+
+4. Pastikan endpoint dapat diakses melalui HTTPS publik.
+5. Setelah alur sandbox lulus, ubah mode ke Production dan masukkan key production yang berbeda.
+
+OpenSawer tidak mempercayai callback browser sebagai bukti pembayaran. Status hanya berubah setelah signature webhook atau status dari API Midtrans terverifikasi. Set `MIDTRANS_MOCK=false` pada deployment publik.
+
+## Identitas Google dan email
+
+Google adalah pilihan awal ketika donatur menonaktifkan mode anonim. Untuk mengaktifkannya:
+
+1. Buat OAuth 2.0 Client bertipe **Web application** di Google Cloud Console.
+2. Tambahkan authorized redirect URI:
+
+   ```text
+   https://domain-anda.example/auth/google/callback
+   ```
+
+3. Isi `GOOGLE_CLIENT_ID` dan `GOOGLE_CLIENT_SECRET`.
+
+Jika Google belum dikonfigurasi, UI menawarkan verifikasi email. Isi konfigurasi `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, dan `SMTP_FROM` agar kode dapat dikirim di production.
+
+## Turnstile opsional
+
+Cloudflare Turnstile hanya muncul di login admin jika `TURNSTILE_SITE_KEY` dan `TURNSTILE_SECRET_KEY` terisi. Jika salah satu kosong, Turnstile tidak dirender dan login tetap menggunakan username serta password.
+
+## Menjalankan dengan Docker Compose
+
+```bash
+cp .env.example .env
+# Edit .env untuk production, lalu:
+docker compose up -d --build
+```
+
+OpenSawer tersedia di `http://127.0.0.1:3000`. Letakkan reverse proxy HTTPS seperti Caddy, Nginx, atau Cloudflare Tunnel di depannya.
+
+Compose menyimpan database pada volume `opensawer-data` dan me-mount `.env` ke container. Pastikan file `.env` sudah ada dan dapat ditulis oleh container agar konfigurasi Midtrans dari dashboard dapat disimpan.
+
+Cek kesehatan aplikasi:
+
+```bash
+curl http://127.0.0.1:3000/healthz
+```
+
+## Menjalankan build tanpa Docker
+
+```bash
+bun install --frozen-lockfile
+bun --bun run build
+NODE_ENV=production bun ./build/index.js
+```
+
+Gunakan satu proses aplikasi agar SQLite memiliki satu writer. Simpan `.env` dan direktori database secara persisten serta sertakan keduanya dalam prosedur backup.
+
+## Halaman aplikasi
+
+| Route          | Fungsi                                      |
+| -------------- | ------------------------------------------- |
+| `/`            | Profil publik, campaign, total, dan ranking |
+| `/sawer`       | Form donasi                                 |
+| `/sawer/{id}`  | Status pembayaran                           |
+| `/admin/login` | Login pemilik instance                      |
+| `/admin`       | Dashboard admin                             |
+| `/faq`         | Pertanyaan umum                             |
+| `/terms`       | Ketentuan layanan                           |
+| `/privacy`     | Kebijakan privasi                           |
+
+## Stack
+
+- Bun 1.3.14+
+- SvelteKit 2 dan Svelte 5
+- Tailwind CSS 4 dan komponen shadcn-svelte
+- SQLite melalui `bun:sqlite`
+- Midtrans Snap
+- TypeScript
+
+## Pengembangan
 
 ```bash
 bun run check
@@ -81,8 +189,19 @@ bun test
 bun --bun run build
 ```
 
-Run the production build with `bun ./build/index.js`, or use the included Docker Compose file. See [configuration](docs/configuration.md) for every environment variable.
+Dokumentasi lanjutan:
 
-## License
+- [Product dan flow](docs/product.md)
+- [Arsitektur](docs/architecture.md)
+- [Data model](docs/data-model.md)
+- [Konfigurasi](docs/configuration.md)
+- [Branding](docs/branding.md)
+- [Roadmap](docs/roadmap.md)
+- [Panduan kontribusi](CONTRIBUTING.md)
+- [Kebijakan keamanan](SECURITY.md)
 
-[MIT](LICENSE)
+## Kontribusi dan lisensi
+
+Issue dan pull request dipersilakan. Baca [CONTRIBUTING.md](CONTRIBUTING.md) sebelum mengirim perubahan besar.
+
+OpenSawer dirilis dengan lisensi [MIT](LICENSE).
