@@ -262,13 +262,24 @@
 				</div>
 				<div class="sm:col-span-2">
 					<label for="profile_image_url" class="mb-1 block text-xs font-bold"
-						>URL foto profil (opsional)</label
+						>URL logo atau foto profil (opsional)</label
 					><Input
 						id="profile_image_url"
 						name="profile_image_url"
 						type="url"
 						placeholder="https://example.com/foto.jpg"
 						value={data.settings.profile_image_url}
+					/>
+				</div>
+				<div class="sm:col-span-2">
+					<label for="favicon_url" class="mb-1 block text-xs font-bold"
+						>URL favicon / ikon browser (opsional)</label
+					><Input
+						id="favicon_url"
+						name="favicon_url"
+						type="url"
+						placeholder="https://example.com/favicon.png"
+						value={data.settings.favicon_url}
 					/>
 				</div>
 

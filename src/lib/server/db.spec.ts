@@ -17,6 +17,7 @@ describe('database defaults', () => {
 		expect(settings().default_show_supporter).toBe(1);
 		expect(settings().default_show_amount).toBe(1);
 		expect(settings().profile_image_url).toBe('');
+		expect(settings().favicon_url).toBe('');
 		expect(settings().social_links).toBe('[]');
 		expect(settings().creator_name).toBe('Nama Creator');
 		expect(settings().intro_text).toContain('Kirim dukungan tanpa membuat akun');

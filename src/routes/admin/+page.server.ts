@@ -92,12 +92,17 @@ export const actions: Actions = {
 			});
 		}
 		const profileImageUrl = value(form, 'profile_image_url');
-		if (profileImageUrl) {
+		const faviconUrl = value(form, 'favicon_url');
+		for (const [label, imageUrl] of [
+			['Logo', profileImageUrl],
+			['Favicon', faviconUrl]
+		]) {
+			if (!imageUrl) continue;
 			try {
-				if (!['http:', 'https:'].includes(new URL(profileImageUrl).protocol)) throw new Error();
+				if (!['http:', 'https:'].includes(new URL(imageUrl).protocol)) throw new Error();
 			} catch {
 				return fail(400, {
-					error: 'URL foto profil harus berupa alamat http atau https.',
+					error: `URL ${label.toLowerCase()} harus berupa alamat http atau https.`,
 					view: 'settings'
 				});
 			}
@@ -118,7 +123,7 @@ export const actions: Actions = {
 			});
 		getDb()
 			.query(
-				`UPDATE site_settings SET site_name=?, creator_name=?, headline=?, intro_text=?, profile_image_url=?, social_links=?, minimum_amount=?, preset_amounts=?, default_show_supporter=?, default_show_amount=?, ranking_enabled=?, updated_at=CURRENT_TIMESTAMP WHERE id=1`
+				`UPDATE site_settings SET site_name=?, creator_name=?, headline=?, intro_text=?, profile_image_url=?, favicon_url=?, social_links=?, minimum_amount=?, preset_amounts=?, default_show_supporter=?, default_show_amount=?, ranking_enabled=?, updated_at=CURRENT_TIMESTAMP WHERE id=1`
 			)
 			.run(
 				value(form, 'site_name').slice(0, 80),
@@ -126,6 +131,7 @@ export const actions: Actions = {
 				value(form, 'headline').slice(0, 180),
 				value(form, 'intro_text').slice(0, 280),
 				profileImageUrl,
+				faviconUrl,
 				JSON.stringify(socialLinks),
 				minimum,
 				JSON.stringify(presets),

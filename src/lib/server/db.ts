@@ -19,6 +19,7 @@ export type SiteSettings = {
 	headline: string;
 	intro_text: string;
 	profile_image_url: string;
+	favicon_url: string;
 	social_links: string;
 	minimum_amount: number;
 	preset_amounts: string;
@@ -35,7 +36,7 @@ CREATE TABLE IF NOT EXISTS site_settings (
  default_show_supporter INTEGER NOT NULL DEFAULT 1 CHECK (default_show_supporter IN (0,1)),
 	default_show_amount INTEGER NOT NULL DEFAULT 1 CHECK (default_show_amount IN (0,1)),
 	ranking_enabled INTEGER NOT NULL DEFAULT 1 CHECK (ranking_enabled IN (0,1)),
-	profile_image_url TEXT NOT NULL DEFAULT '', social_links TEXT NOT NULL DEFAULT '[]',
+	profile_image_url TEXT NOT NULL DEFAULT '', favicon_url TEXT NOT NULL DEFAULT '', social_links TEXT NOT NULL DEFAULT '[]',
  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 CREATE TABLE IF NOT EXISTS campaigns (
@@ -89,6 +90,8 @@ export function getDb(path = process.env.OPENSAWER_DB_PATH || './data/opensawer.
 		database.exec(
 			"ALTER TABLE site_settings ADD COLUMN profile_image_url TEXT NOT NULL DEFAULT ''"
 		);
+	if (!settingColumns.has('favicon_url'))
+		database.exec("ALTER TABLE site_settings ADD COLUMN favicon_url TEXT NOT NULL DEFAULT ''");
 	if (!settingColumns.has('social_links'))
 		database.exec("ALTER TABLE site_settings ADD COLUMN social_links TEXT NOT NULL DEFAULT '[]'");
 	if (!settingColumns.has('creator_name'))

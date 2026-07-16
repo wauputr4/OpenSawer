@@ -2,11 +2,11 @@
 	import './layout.css';
 	import favicon from '$lib/assets/favicon.svg';
 
-	let { children } = $props();
+	let { data, children } = $props();
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
+	<link rel="icon" href={data.faviconUrl || favicon} />
 	<meta name="theme-color" content="#0f513f" />
 	<meta
 		name="description"

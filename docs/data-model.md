@@ -13,6 +13,7 @@ One row stores the presentation defaults editable from the admin dashboard.
 | `creator_name`           | Public creator name                   |
 | `headline`, `intro_text` | Editable public profile copy          |
 | `profile_image_url`      | Optional public profile image URL     |
+| `favicon_url`            | Optional browser icon URL             |
 | `social_links`           | JSON array of up to six public links  |
 | `minimum_amount`         | Positive integer rupiah amount        |
 | `preset_amounts`         | JSON array of positive rupiah amounts |
