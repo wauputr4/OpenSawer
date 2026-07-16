@@ -45,7 +45,9 @@
 <article class="mx-auto max-w-3xl px-5 py-14 lg:px-8 lg:py-20">
 	<a href={resolve('/')} class="text-sm font-bold text-primary hover:underline">← Kembali</a>
 	<p class="mt-10 text-sm font-bold tracking-[.16em] text-primary uppercase">Pusat bantuan</p>
-	<h1 class="mt-3 font-heading text-4xl font-semibold sm:text-5xl">Pertanyaan yang sering muncul.</h1>
+	<h1 class="mt-3 font-heading text-4xl font-semibold sm:text-5xl">
+		Pertanyaan yang sering muncul.
+	</h1>
 	<p class="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">
 		Hal penting sebelum mengirim dukungan melalui OpenSawer.
 	</p>
