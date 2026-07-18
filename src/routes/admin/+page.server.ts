@@ -112,10 +112,11 @@ export const actions: Actions = {
 		]) {
 			if (!imageUrl) continue;
 			try {
-				if (!['http:', 'https:'].includes(new URL(imageUrl).protocol)) throw new Error();
+				if (!imageUrl.startsWith('/') && !['http:', 'https:'].includes(new URL(imageUrl).protocol))
+					throw new Error();
 			} catch {
 				return fail(400, {
-					error: `URL ${label.toLowerCase()} harus berupa alamat http atau https.`,
+					error: `URL ${label.toLowerCase()} harus berupa alamat http, https, atau path lokal yang diawali /.`,
 					view: 'settings'
 				});
 			}

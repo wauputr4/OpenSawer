@@ -146,14 +146,25 @@ export const actions: Actions = {
 			)
 				return fail(409, { action: 'donate', error: 'Identitas tidak cocok.' });
 			if (conflict) donorId = conflict.id;
-			else
-				donorId = Number(
-					db
-						.query<{ id: number }, [string, string]>(
-							'INSERT INTO donors (username, email, verified_at) VALUES (?, ?, CURRENT_TIMESTAMP) RETURNING id'
-						)
-						.get(username, email)?.id
-				);
+			else {
+				try {
+					donorId = Number(
+						db
+							.query<{ id: number }, [string, string]>(
+								'INSERT INTO donors (username, email, verified_at) VALUES (?, ?, CURRENT_TIMESTAMP) RETURNING id'
+							)
+							.get(username, email)?.id
+					);
+				} catch (error) {
+					if (
+						!(error instanceof Error) ||
+						!('code' in error) ||
+						!String(error.code).startsWith('SQLITE_CONSTRAINT')
+					)
+						throw error;
+					return fail(409, { action: 'donate', error: 'Identitas sudah terdaftar.' });
+				}
+			}
 			if (verificationId)
 				db.query('UPDATE email_verifications SET used_at = CURRENT_TIMESTAMP WHERE id = ?').run(
 					verificationId

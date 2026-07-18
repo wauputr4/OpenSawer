@@ -32,7 +32,12 @@ SMTP_PORT=587
 SMTP_USERNAME=
 SMTP_PASSWORD=
 SMTP_FROM=no-reply@example.com
+SMTP_ENCRYPTION=
+SMTP_FROM_ADDRESS=
+SMTP_FROM_NAME=
 ```
+
+`SMTP_USER` dan `SMTP_PASS` dapat dipakai sebagai alias. Isi `SMTP_ENCRYPTION=null` untuk SMTP lokal tanpa TLS; `SMTP_FROM_ADDRESS` dan `SMTP_FROM_NAME` dipakai jika `SMTP_FROM` kosong.
 
 `ORIGIN` is required by the self-hosted SvelteKit server for correct public URLs and form-origin checks. Never commit `.env`, database files, uploads, Midtrans keys, SMTP credentials, or session secrets.
 
