@@ -13,11 +13,11 @@ The instance owner manages campaigns, donations, visibility, branding, and Midtr
 ## Donation flow
 
 1. Open the landing page or a direct campaign link.
-2. Select a campaign. The default is `General Support` with no target.
-3. Select a preset amount or enter another valid amount.
+2. Select a campaign. The default is `Sawer aku` with no target.
+3. Select a preset amount or choose `Nominal lain` to enter a custom amount.
 4. Add an optional message.
-5. Choose visibility. Identity and amount are public by default.
-6. For a public identity, enter a unique username and email, then verify the email when claiming a new username.
+5. Donations start anonymous. Turn off anonymity to use a public identity.
+6. For a public identity, enter a unique username and verify with Google by default or an email one-time code.
 7. Continue to Midtrans Snap.
 8. Wait for the server to verify the Midtrans notification.
 9. Show the final payment state and update public totals/rankings when paid.
@@ -28,14 +28,14 @@ Browser callbacks never mark a donation as paid.
 
 Each donation stores two independent public choices:
 
-| Show supporter | Show amount | Public result |
-| --- | --- | --- |
-| Yes | Yes | `nabila — Rp100.000` |
-| Yes | No | `nabila — Nominal disembunyikan` |
-| No | Yes | `Anonim — Rp100.000` |
-| No | No | `Anonim — Nominal disembunyikan` |
+| Show supporter | Show amount | Public result                    |
+| -------------- | ----------- | -------------------------------- |
+| Yes            | Yes         | `nabila — Rp100.000`             |
+| Yes            | No          | `nabila — Nominal disembunyikan` |
+| No             | Yes         | `Anonim — Rp100.000`             |
+| No             | No          | `Anonim — Nominal disembunyikan` |
 
-The admin can change the instance defaults, but the initial defaults are `show supporter = true` and `show amount = true`. Email is always private.
+The admin can change the visibility defaults. The donation form starts anonymous, while the amount follows the instance default. Email is always private.
 
 ## Campaigns
 
@@ -49,7 +49,7 @@ A campaign has:
 - Optional target amount.
 - Active or archived state.
 
-The instance starts with one non-deletable default campaign named `General Support`, type `general`, with no target. A target adds progress display; it does not change payment behavior.
+The instance starts with one non-deletable default campaign named `Sawer aku`, type `general`, with no target. A target adds progress display; it does not change payment behavior.
 
 ## Ranking
 
@@ -62,13 +62,15 @@ The instance starts with one non-deletable default campaign named `General Suppo
 
 ## Minimum pages
 
+The public experience is rendered with SvelteKit and Svelte 5. Use shadcn-svelte only for primitives that improve consistency or accessibility, then style them with Tailwind CSS 4. The donation flow should feel like one focused page, not a generic admin product or component showcase.
+
 ### Landing `/`
 
-Logo, recipient identity, short pitch, primary `Kirim Sawer` button, active campaigns, top-five ranking, and a small footer.
+Profile image, editable creator name, headline and description, up to six customizable social or short links, primary `Kirim Sawer` button, active campaigns, top-five ranking, and a small footer. Keep the opening screen calm and immediately understandable; avoid feature grids, pricing sections, and decorative dashboard imagery.
 
 ### Donation `/sawer`
 
-One mobile-first card containing campaign, amount, optional message, identity, visibility controls, payment total, and one payment CTA.
+One mobile-first card containing campaign, amount, optional message, identity, collapsible visibility controls, payment total, and one payment CTA. The amount and CTA must dominate the hierarchy; privacy choices stay available in a native disclosure that is closed by default.
 
 ### Payment status `/sawer/{id}`
 
@@ -80,5 +82,4 @@ One owner login. No registration or password recovery in the first release.
 
 ### Admin dashboard `/admin`
 
-One screen with Summary, Donations, Campaigns, and Settings sections. No charts are required.
-
+One responsive screen with Overview, History, Campaign, and Setting menus. Campaign creation and editing use a native modal dialog. The menu stays at the top on desktop and becomes bottom navigation on mobile. Prefer native SvelteKit forms and clear tables over client-side dashboard machinery. No charts are required.

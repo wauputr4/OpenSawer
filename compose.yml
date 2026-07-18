@@ -1,0 +1,15 @@
+services:
+  opensawer:
+    build: .
+    restart: unless-stopped
+    environment:
+      HOST: 0.0.0.0
+      OPENSAWER_ENV_PATH: /app/.env
+    ports:
+      - '127.0.0.1:3000:3000'
+    volumes:
+      - ./.env:/app/.env
+      - opensawer-data:/data
+
+volumes:
+  opensawer-data:

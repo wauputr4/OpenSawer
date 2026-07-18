@@ -1,11 +1,8 @@
 ## What changed
 
-
 ## Why
 
-
 ## Verification
-
 
 ## Checklist
 

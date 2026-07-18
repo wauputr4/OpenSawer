@@ -8,4 +8,7 @@ uploads/
 *.db-wal
 .DS_Store
 .codex/
-
+node_modules/
+.svelte-kit/
+build/
+coverage/
