@@ -37,4 +37,4 @@ OpenSawer should feel generous, direct, and human rather than like a generic fin
 
 Tailwind CSS 4 should express a small set of shared visual tokens. Do not build a separate design-system package until repeated product code proves it is needed.
 
-Actual logo artwork is intentionally deferred until a visual direction is selected and tested at favicon, mobile header, and repository social-preview sizes.
+The selected default artwork follows this direction. The repository logo is stored at `static/opensawer-logo.png`; the compact application mark is implemented in `src/lib/components/logo-mark.svelte`, with the default favicon at `src/lib/assets/favicon.svg`. An instance owner can replace the public logo/profile image and favicon from the admin settings without changing these source assets.

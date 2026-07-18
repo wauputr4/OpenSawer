@@ -8,7 +8,7 @@ OpenSawer adalah aplikasi donasi sederhana yang bisa dijalankan di server sendir
 
 Donatur tidak perlu membuat akun. Donasi bersifat anonim secara default; jika ingin memakai identitas publik, donatur dapat memverifikasi username unik melalui Google atau kode email. Pembayaran awal menggunakan Midtrans Snap dan seluruh data aplikasi disimpan di SQLite milik pengelola.
 
-> **Status:** early alpha. Gunakan Midtrans Sandbox dan uji seluruh alur sebelum menjalankan OpenSawer di production.
+> **Status:** `v0.1.0-preview.1`. Gunakan Midtrans Sandbox dan uji seluruh alur sebelum menjalankan OpenSawer di production.
 
 ## Fitur utama
 
@@ -130,11 +130,11 @@ Google adalah pilihan awal ketika donatur menonaktifkan mode anonim. Untuk menga
 
 3. Isi `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, dan `GOOGLE_REDIRECT_URI` dengan URI yang sama.
 
-Jika Google belum dikonfigurasi, UI menawarkan verifikasi email. Isi konfigurasi `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, dan `SMTP_FROM` agar kode dapat dikirim di production.
+Jika Google belum dikonfigurasi, UI menawarkan verifikasi email. Isi konfigurasi `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, dan `SMTP_FROM` agar kode dapat dikirim di production. `SMTP_USER` dan `SMTP_PASS` juga diterima sebagai alias; gunakan `SMTP_ENCRYPTION=null` hanya untuk server SMTP lokal tanpa TLS.
 
 ## Turnstile opsional
 
-Cloudflare Turnstile hanya muncul di login admin jika `TURNSTILE_ENABLED=true`, `PUBLIC_TURNSTILE_SITE_KEY`, dan `TURNSTILE_SECRET_KEY` terisi. Jika tidak lengkap, Turnstile tidak dirender dan login tetap menggunakan username serta password.
+Cloudflare Turnstile hanya muncul di login admin jika site key dan secret key terisi serta `TURNSTILE_ENABLED` tidak bernilai `false`. Gunakan `TURNSTILE_ENABLED=true` saat mengaktifkannya; jika konfigurasi tidak lengkap, login tetap menggunakan username serta password tanpa widget.
 
 ## Menjalankan dengan Docker Compose
 
@@ -194,6 +194,10 @@ bun run lint
 bun test
 bun --bun run build
 ```
+
+## Batas release preview
+
+Preview ini ditujukan untuk satu pengelola, satu proses aplikasi, dan satu database SQLite. Payment gateway yang tersedia baru Midtrans. Export transaksi, backup/restore terotomasi, pembatasan request donasi di level aplikasi, serta multi-admin belum tersedia; gunakan reverse proxy untuk HTTPS dan rate limit publik, lalu backup `.env` bersama database secara rutin.
 
 Dokumentasi lanjutan:
 
