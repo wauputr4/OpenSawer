@@ -9,8 +9,12 @@ ORIGIN=https://sawer.example.com
 PORT=3000
 OPENSAWER_DB_PATH=./data/opensawer.db
 OPENSAWER_SESSION_SECRET=replace-with-a-long-random-value
+# Optional path used when the admin must update a mounted env file.
+OPENSAWER_ENV_PATH=.env
 
 OPENSAWER_ADMIN_USERNAME=admin
+# Local development only; production requires the hash below.
+OPENSAWER_ADMIN_PASSWORD=change-me
 OPENSAWER_ADMIN_PASSWORD_HASH=
 
 PUBLIC_TURNSTILE_SITE_KEY=
@@ -39,15 +43,15 @@ SMTP_FROM_NAME=
 
 `SMTP_USER` dan `SMTP_PASS` dapat dipakai sebagai alias. Isi `SMTP_ENCRYPTION=null` untuk SMTP lokal tanpa TLS; `SMTP_FROM_ADDRESS` dan `SMTP_FROM_NAME` dipakai jika `SMTP_FROM` kosong.
 
-`ORIGIN` is required by the self-hosted SvelteKit server for correct public URLs and form-origin checks. Never commit `.env`, database files, uploads, Midtrans keys, SMTP credentials, or session secrets.
+`ORIGIN` is required by the self-hosted SvelteKit server for correct public URLs and form-origin checks. `OPENSAWER_ENV_PATH` defaults to `.env`; set it to the writable mounted env path when the admin dashboard must save encrypted Midtrans keys. Never commit `.env`, database files, Midtrans keys, SMTP credentials, or session secrets.
 
-Turnstile is optional. The admin login only renders and validates it when `TURNSTILE_ENABLED=true` and both Turnstile keys are configured.
+Turnstile is optional. The admin login renders and validates it when both keys are configured and `TURNSTILE_ENABLED` is not `false`; set it explicitly to `true` when enabling the feature. `TURNSTILE_SITE_KEY` is accepted as a server-side alias for `PUBLIC_TURNSTILE_SITE_KEY`.
 
 Google is the default named-donor method when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are configured. Register `GOOGLE_REDIRECT_URI` as an authorized redirect URI using either the built-in `/auth/google/callback` route or its `/api/auth/google/callback` alias. Email OTP remains available as the fallback.
 
 `MIDTRANS_MOCK=true` is only for local UI development. It adds a server-side payment simulation action and must never be enabled on a public deployment. Without SMTP, local development returns the OTP in the page response; production rejects OTP delivery until SMTP is configured.
 
-Generate the production admin hash with Bun, for example:
+Generate the production admin hash with Bun, for example. Plain `OPENSAWER_ADMIN_PASSWORD` is ignored in production:
 
 ```bash
 bun -e "console.log(await Bun.password.hash('replace-this-password'))"
@@ -80,4 +84,4 @@ bun -e "console.log(await Bun.password.hash('replace-this-password'))"
 
 ## Self-hosting
 
-The supported first deployment is one SvelteKit process running on Bun behind an HTTPS reverse proxy. Mount the persistent `data/` directory and the writable `.env` file. Build with `bun --bun run build`, run with `bun ./build/index.js`, and keep a single writer for SQLite.
+The supported first deployment is one SvelteKit process running on Bun behind an HTTPS reverse proxy. Mount the persistent `data/` directory and the writable `.env` file. Build with `bun --bun run build`, run with `bun ./build/index.js`, and keep a single writer for SQLite. Apply public request rate limits at the reverse proxy; OpenSawer currently throttles email-code requests but does not include a general donation rate limiter.

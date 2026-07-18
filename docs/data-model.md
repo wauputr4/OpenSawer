@@ -12,6 +12,7 @@ One row stores the presentation defaults editable from the admin dashboard.
 | `site_name`              | Instance name used in metadata        |
 | `creator_name`           | Public creator name                   |
 | `headline`, `intro_text` | Editable public profile copy          |
+| `receipt_quote`          | Editable quote on the public summary  |
 | `profile_image_url`      | Optional public profile image URL     |
 | `favicon_url`            | Optional browser icon URL             |
 | `social_links`           | JSON array of up to six public links  |
@@ -63,10 +64,11 @@ Every named donation must prove possession of the matching email through Google 
 | `donor_id`                            | Nullable for anonymous donors                                    |
 | `amount`                              | Positive integer rupiah amount                                   |
 | `message`                             | Optional plain text                                              |
-| `show_supporter`                      | Starts from the open site default; false displays `Anonim`       |
+| `show_supporter`                      | False for anonymous donations; named donors use the site default |
 | `show_amount`                         | Starts from the open site default; false hides the public amount |
 | `show_in_ranking`                     | Admin moderation flag, defaults to true                          |
 | `status`                              | Payment state                                                    |
+| `snap_token`                          | Private Midtrans Snap token                                      |
 | `payment_type`                        | Midtrans payment type when known                                 |
 | `provider_transaction_id`             | Midtrans transaction identifier                                  |
 | `paid_at`, `created_at`, `updated_at` | UTC timestamps                                                   |

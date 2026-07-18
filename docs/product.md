@@ -45,7 +45,7 @@ A campaign has:
 
 - Name and slug.
 - Type such as `general`, `creator`, `social`, `event`, or `other`.
-- Short description and optional image.
+- Short description.
 - Optional target amount.
 - Active or archived state.
 
@@ -54,7 +54,7 @@ The instance starts with one non-deletable default campaign named `Sawer aku`, t
 ## Ranking
 
 - Only paid donations count.
-- Monthly and all-time periods are sufficient for the first release.
+- The preview shows the top five all-time entries; monthly filtering is deferred.
 - Named donations aggregate by verified donor.
 - Anonymous donations may appear as individual entries but never merge into a fake shared donor.
 - Hidden amounts count toward ranking order but render without the amount.

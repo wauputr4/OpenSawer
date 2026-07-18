@@ -11,6 +11,7 @@ Browser
       -> server actions and route handlers
       -> bun:sqlite -> SQLite
       -> Midtrans Snap API
+      -> Google OAuth and SMTP (optional identity verification)
 
 Midtrans webhook
   -> SvelteKit route handler
@@ -25,7 +26,9 @@ Keep responsibilities close to the routes that use them:
 ```text
 src/lib/components/ui     copied shadcn-svelte components actually used
 src/lib/server/db.ts      bun:sqlite connection and migrations
-src/lib/server/auth.ts    admin session and donor verification helpers
+src/lib/server/auth.ts    admin session helpers
+src/lib/server/google.ts  signed donor identity and OAuth helpers
+src/lib/server/email.ts   email-code delivery and hashing
 src/lib/server/midtrans.ts Snap requests and notification verification
 src/routes                public, admin, health, and webhook routes
 ```
@@ -69,6 +72,7 @@ Move to another database only when measured concurrency or deployment requiremen
 - Treat donor fields and webhook bodies as untrusted.
 - Render donor messages as text, never HTML.
 - Keep Midtrans server keys, SMTP credentials, and session secrets server-only.
-- Use HTTPS, secure cookies, CSRF origin checks, request-size limits, and rate limits on donation and email-verification endpoints.
+- Use HTTPS and secure cookies in production; SvelteKit performs form-origin checks.
+- Email-code requests have a small built-in throttle. Apply broader donation/request limits at the reverse proxy for this preview.
 - Verify Midtrans notifications and process them idempotently.
 - Never expose donor email publicly.
